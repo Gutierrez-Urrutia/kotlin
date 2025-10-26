@@ -6,7 +6,7 @@ import cl.duoc.maestranza_v2.ui.utils.obtenerWindowSizeClass // <-- Llama al hel
 
 @Composable
 fun WelcomeScreen() {
-    val windowSizeClass = obtenerWindowSizeClass() // <-- Usa el helper aquí
+    val windowSizeClass = obtenerWindowSizeClass()
 
     when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Compact -> WelcomeScreenCompact()

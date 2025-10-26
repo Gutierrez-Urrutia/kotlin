@@ -56,7 +56,7 @@ fun WelcomeScreenMedium() {
     }
 }
 
-@Preview(showBackground = true, name = "Medium", device = Devices.TABLET )
+@Preview(showBackground = true, name = "Medium", device = "spec:width=800dp,height=1280dp,dpi=320" )
 @Composable
 fun WelcomeScreenMediumPreview(){
     Maestranza_V2Theme {

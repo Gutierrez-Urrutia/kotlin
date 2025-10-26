@@ -51,7 +51,7 @@ fun WelcomeScreenCompact() {
     }
 }
 
-@Preview(showBackground = true, name = "Compact", widthDp = 320, heightDp = 640 )
+@Preview(showBackground = true, name = "Compact", device = "spec:width=411dp,height=891dp,dpi=420")
 @Composable
 fun WelcomeScreenCompactPreview(){
     Maestranza_V2Theme {
