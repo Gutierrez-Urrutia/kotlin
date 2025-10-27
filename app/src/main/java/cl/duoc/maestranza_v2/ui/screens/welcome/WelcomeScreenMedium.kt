@@ -1,5 +1,9 @@
 package cl.duoc.maestranza_v2.ui.screens.welcome
 
+import android.annotation.SuppressLint
+import androidx.navigation.NavController
+import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.navigation.Screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -11,12 +15,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.R
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WelcomeScreenMedium() {
+fun WelcomeScreenMedium(
+    navController: NavController,
+    viewModel: MainViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Medium") })
@@ -56,10 +63,14 @@ fun WelcomeScreenMedium() {
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true, name = "Medium", device = "spec:width=800dp,height=1280dp,dpi=320" )
 @Composable
 fun WelcomeScreenMediumPreview(){
     Maestranza_V2Theme {
-        WelcomeScreenMedium()
+        WelcomeScreenMedium(
+            navController = rememberNavController(),
+            viewModel = MainViewModel()
+        )
     }
 }

@@ -1,5 +1,6 @@
 package cl.duoc.maestranza_v2.ui.screens.welcome
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,12 +11,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.R
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
+import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WelcomeScreenExpanded() {
+fun WelcomeScreenExpanded(
+    navController: NavController,
+    viewModel: MainViewModel
+) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Expanded") })
@@ -31,7 +38,9 @@ fun WelcomeScreenExpanded() {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo de la app",
-                modifier = Modifier.weight(1f).sizeIn(maxWidth = 250.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .sizeIn(maxWidth = 250.dp)
             )
             Spacer(modifier = Modifier.width(48.dp))
             Column(
@@ -55,10 +64,14 @@ fun WelcomeScreenExpanded() {
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true, name = "Expanded", device = "spec:width=1280dp,height=800dp,dpi=240" )
 @Composable
 fun WelcomeScreenExpandedPreview(){
     Maestranza_V2Theme {
-        WelcomeScreenExpanded()
+        WelcomeScreenExpanded(
+            navController = rememberNavController(),
+            viewModel = MainViewModel()
+        )
     }
 }

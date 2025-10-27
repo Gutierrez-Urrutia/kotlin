@@ -1,13 +1,17 @@
 package cl.duoc.maestranza_v2.ui.screens.inventory
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,9 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
+import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
-// --- Modelo de Datos y Datos de Prueba ---
 data class InventoryItem(
     val code: String,
     val name: String,
@@ -28,39 +35,57 @@ data class InventoryItem(
     val stock: Int
 )
 
-val dummyInventoryItems = listOf(
-    InventoryItem("HCOR-001", "Broca HSS 5mm", "Herramientas de Corte", 50),
-    InventoryItem("HCOR-002", "Broca HSS 10mm", "Herramientas de Corte", 35),
-    InventoryItem("HCOR-003", "Fresa frontal 25mm", "Herramientas de Corte", 15),
-    InventoryItem("HSUJ-001", "Prensa de banco 4\"", "Herramientas de Sujeción", 20),
-    InventoryItem("HMEC-001", "Calibre digital 150mm", "Herramientas de Medición", 40),
-    InventoryItem("HCOR-004", "Sierra circular 200mm", "Herramientas de Corte", 25),
-    InventoryItem("HMEC-002", "Micrómetro 0-25mm", "Herramientas de Medición", 18),
-    InventoryItem("HCOR-005", "Cuchilla de torno TNMG", "Herramientas de Corte", 120),
-)
-// -----------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InventoryScreenCompact() {
+fun InventoryScreenCompact(
+    navController: NavController,
+    viewModel: MainViewModel
+) {
+    val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
+    val items = listOf(Screen.Inventory, Screen.Users)
+    var selectedItem by remember { mutableStateOf(0) }
 
+    
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventario") },
+                title = { Text("Gestión de Inventario") },
                 navigationIcon = {
                     IconButton(onClick = { /* Acción futura */ }) {
                         Icon(Icons.Default.Menu, contentDescription = "Menú")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Acción futura */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                    IconButton(onClick = { viewModel.navigateTo(Screen.AddProduct) }) {
+                        Icon(Icons.Default.Add, contentDescription = "Agregar producto")
                     }
                 }
             )
+        },
+        bottomBar = {
+            NavigationBar {
+                items.forEachIndexed { index, screen ->
+                    NavigationBarItem(
+                        selected = selectedItem == index,
+                        onClick = {
+                            selectedItem = index
+                            // Usamos el ViewModel para navegar, igual que en la guía
+                            viewModel.navigateTo(screen)
+                        },
+                        label = { Text(text = screen.route.replaceFirstChar { it.uppercase() }) },
+                        icon = {
+                            Icon(
+                                imageVector = if (screen == Screen.Inventory) Icons.Default.Inventory else Icons.Default.Person,
+                                contentDescription = screen.route
+                            )
+                        }
+                    )
+                }
+            }
         }
+
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -97,7 +122,7 @@ fun InventoryScreenCompact() {
                         }
                         Divider()
                     }
-                    items(dummyInventoryItems) { item ->
+                    items(inventoryList) { item ->
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(item.code, modifier = Modifier
                                 .width(120.dp)
@@ -117,14 +142,19 @@ fun InventoryScreenCompact() {
     }
 }
 
+
+@SuppressLint("ComposableNaming", "ViewModelConstructorInComposable")
 @Preview(
     showBackground = true,
-    name = "Compacto (Teléfono)",
+    name = "Compact",
     device = "spec:width=411dp,height=891dp,dpi=420"
 )
 @Composable
 fun InventoryScreenCompactPreview() {
     Maestranza_V2Theme {
-        InventoryScreenCompact()
+        InventoryScreenCompact(
+            navController = rememberNavController(),
+            viewModel = MainViewModel()
+        )
     }
 }

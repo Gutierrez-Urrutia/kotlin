@@ -1,4 +1,4 @@
-package cl.duoc.maestranza_v2.ui.screens.inventory
+package cl.duoc.maestranza_v2.ui.screens.users
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.horizontalScroll
@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -25,16 +24,35 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.navigation.Screen
+import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryScreenCompact
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
+data class UserItem(
+    val username: String,
+    val name: String,
+    val email: String,
+    val roles: String,
+    val status: String
+)
+
+val dummyUserItems = listOf(
+    UserItem("pablo.a", "Pablo Alarcón", "pablo.a@duoc.cl", "Admin", "Activo"),
+    UserItem("ana.m", "Ana María Soto", "ana.m@duoc.cl", "Empleado", "Activo"),
+    UserItem("carlos.g", "Carlos Gómez", "carlos.g@duoc.cl", "Supervisor", "Inactivo"),
+    UserItem("laura.f", "Laura Fuentes", "laura.f@duoc.cl", "Empleado", "Activo"),
+    UserItem("miguel.r", "Miguel Rojas", "miguel.r@duoc.cl", "Admin", "Activo"),
+    UserItem("sofia.v", "Sofía Valdés", "sofia.v@duoc.cl", "Empleado", "Activo"),
+    UserItem("diego.c", "Diego Castro", "diego.c@duoc.cl", "Supervisor", "Activo"),
+    UserItem("javiera.h", "Javiera Herrera", "javiera.h@duoc.cl", "Empleado", "Inactivo")
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InventoryScreenMedium(
+fun UserScreenCompact(
     navController: NavController,
     viewModel: MainViewModel
 ) {
-    val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
     val items = listOf(Screen.Inventory, Screen.Users)
     var selectedItem by remember { mutableStateOf(0) }
@@ -42,9 +60,17 @@ fun InventoryScreenMedium(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventario") },
-                navigationIcon = { IconButton(onClick = { /* Acción futura */ }) { Icon(Icons.Default.Menu, "Menú") } },
-                actions = { IconButton(onClick = { viewModel.navigateTo(Screen.AddProduct) }) { Icon(Icons.Default.Add, "Agregar producto") } }
+                title = { Text("Gestión de Usuarios") },
+                navigationIcon = {
+                    IconButton(onClick = { /* Acción futura */ }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menú")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Acción futura */ }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                    }
+                }
             )
         },
         bottomBar = {
@@ -73,51 +99,48 @@ fun InventoryScreenMedium(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 16.dp)
         ) {
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
-                label = { Text("Buscar en inventario") },
+                label = { Text("Buscar usuario por nombre o email") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                trailingIcon = { Icon(Icons.Default.Search, "Buscar") }
+                trailingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar")
+                }
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Tabla de usuarios
             Box(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                LazyColumn(modifier = Modifier.width(700.dp)) {
+                LazyColumn(modifier = Modifier.width(500.dp)) { // Ancho ajustado para compact
                     item {
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Código", fontWeight = FontWeight.Bold, modifier = Modifier
+                            Text("Usuario", fontWeight = FontWeight.Bold, modifier = Modifier
                                 .width(120.dp)
                                 .padding(8.dp))
                             Text("Nombre", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(250.dp)
+                                .width(200.dp)
                                 .padding(8.dp))
-                            Text("Categoría", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(230.dp)
-                                .padding(8.dp))
-                            Text("Stock", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(100.dp)
+                            Text("Estado", fontWeight = FontWeight.Bold, modifier = Modifier
+                                .width(180.dp)
                                 .padding(8.dp))
                         }
                         Divider()
                     }
-                    items(inventoryList) { item ->
+                    items(dummyUserItems) { user ->
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(item.code, modifier = Modifier
+                            Text(user.username, modifier = Modifier
                                 .width(120.dp)
                                 .padding(8.dp))
-                            Text(item.name, modifier = Modifier
-                                .width(250.dp)
+                            Text(user.name, modifier = Modifier
+                                .width(200.dp)
                                 .padding(8.dp))
-                            Text(item.category, modifier = Modifier
-                                .width(230.dp)
-                                .padding(8.dp))
-                            Text(item.stock.toString(), modifier = Modifier
-                                .width(100.dp)
+                            Text(user.status, modifier = Modifier
+                                .width(180.dp)
                                 .padding(8.dp))
                         }
                         Divider()
@@ -128,18 +151,19 @@ fun InventoryScreenMedium(
     }
 }
 
-@SuppressLint("ComposableNaming", "ViewModelConstructorInComposable")
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(
     showBackground = true,
-    name = "Compact",
+    name = "User Compact",
     device = "spec:width=411dp,height=891dp,dpi=420"
 )
 @Composable
-fun InventoryScreenMediumPreview() {
+fun UserScreenCompactPreview() {
     Maestranza_V2Theme {
-        InventoryScreenMedium(
+        UserScreenCompact(
             navController = rememberNavController(),
             viewModel = MainViewModel()
         )
     }
 }
+
