@@ -18,8 +18,9 @@ import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.agregarProducto.AddProductScreen
 import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryScreen
-import cl.duoc.maestranza_v2.ui.screens.user.UserScreen
-import cl.duoc.maestranza_v2.ui.screens.welcome.WelcomeScreen
+import cl.duoc.maestranza_v2.ui.screens.login.LoginScreen
+import cl.duoc.maestranza_v2.ui.screens.user.UsersScreen
+
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import kotlinx.coroutines.flow.collectLatest
 
@@ -48,17 +49,17 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.Welcome.route,
+                        startDestination = Screen.Login.route,
                         modifier = Modifier.padding(paddingValues = innerPadding))
                     {
-                        composable(route = Screen.Welcome.route) {
-                            WelcomeScreen(navController = navController, viewModel = mainViewModel)
+                        composable(route = Screen.Login.route) {
+                            LoginScreen(navController = navController, viewModel = mainViewModel)
                         }
                         composable(route = Screen.Inventory.route){
                             InventoryScreen(navController = navController, viewModel = mainViewModel)
                         }
                         composable(route = Screen.Users.route){
-                            UserScreen(navController = navController, viewModel = mainViewModel)
+                            UsersScreen(navController = navController, viewModel = mainViewModel)
                         }
                         composable(route = Screen.AddProduct.route){
                             AddProductScreen(

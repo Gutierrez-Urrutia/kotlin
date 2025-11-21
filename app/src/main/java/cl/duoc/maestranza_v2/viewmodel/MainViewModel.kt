@@ -4,11 +4,12 @@ import androidx.lifecycle.ViewModel
 import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryItem
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

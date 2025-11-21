@@ -8,7 +8,7 @@ import cl.duoc.maestranza_v2.ui.utils.obtenerWindowSizeClass
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
 @Composable
-fun UserScreen(navController : NavController, viewModel : MainViewModel) {
+fun UsersScreen(navController : NavController, viewModel : MainViewModel) {
     val windowSizeClass = obtenerWindowSizeClass()
 
     when (windowSizeClass.widthSizeClass) {
