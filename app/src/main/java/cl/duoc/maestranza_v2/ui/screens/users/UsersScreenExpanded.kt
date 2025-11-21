@@ -41,7 +41,11 @@ fun UserScreenExpanded(
             TopAppBar(
                 title = { Text("Gestión de Usuarios") },
                 navigationIcon = { IconButton(onClick = { /* Acción futura */ }) { Icon(Icons.Default.Menu, "Menú") } },
-                actions = { IconButton(onClick = { /* Acción futura */ }) { Icon(Icons.Default.Notifications, "Notificaciones") } }
+                actions = {
+                    IconButton(onClick = { /* Acción futura */ }) {
+                        Icon(Icons.Default.Person, contentDescription = "Opciones de Usuario")
+                    }
+                }
             )
         },
         bottomBar = {

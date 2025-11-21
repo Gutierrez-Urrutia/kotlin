@@ -56,8 +56,8 @@ fun InventoryScreenCompact(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.navigateTo(Screen.AddProduct) }) {
-                        Icon(Icons.Default.Add, contentDescription = "Agregar producto")
+                    IconButton(onClick = { /* Acción futura */}) {
+                        Icon(Icons.Default.Person, contentDescription = "Opciones de Usuario")
                     }
                 }
             )

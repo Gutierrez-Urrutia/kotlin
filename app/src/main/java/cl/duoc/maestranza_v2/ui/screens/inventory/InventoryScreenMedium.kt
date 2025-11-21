@@ -44,7 +44,11 @@ fun InventoryScreenMedium(
             TopAppBar(
                 title = { Text("Inventario") },
                 navigationIcon = { IconButton(onClick = { /* Acción futura */ }) { Icon(Icons.Default.Menu, "Menú") } },
-                actions = { IconButton(onClick = { viewModel.navigateTo(Screen.AddProduct) }) { Icon(Icons.Default.Add, "Agregar producto") } }
+                actions = {
+                    IconButton(onClick = { /* Acción futura */}) {
+                        Icon(Icons.Default.Person, contentDescription = "Opciones de Usuario")
+                    }
+                }
             )
         },
         bottomBar = {

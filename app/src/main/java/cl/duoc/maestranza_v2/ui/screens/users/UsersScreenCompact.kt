@@ -68,7 +68,7 @@ fun UserScreenCompact(
                 },
                 actions = {
                     IconButton(onClick = { /* Acción futura */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        Icon(Icons.Default.Person, contentDescription = "Opciones de Usuario")
                     }
                 }
             )
