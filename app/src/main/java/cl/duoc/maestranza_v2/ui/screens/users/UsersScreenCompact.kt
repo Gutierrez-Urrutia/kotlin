@@ -7,52 +7,57 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import cl.duoc.maestranza_v2.model.User
+import cl.duoc.maestranza_v2.ui.components.AddUserBottomSheet
+import cl.duoc.maestranza_v2.ui.components.UserCard
+import cl.duoc.maestranza_v2.ui.components.UsersFilterBottomSheet
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
-
-data class UserItem(
-    val username: String,
-    val name: String,
-    val email: String,
-    val roles: String,
-    val status: String
-)
-
-val dummyUserItems = listOf(
-    UserItem("pablo.a", "Pablo Alarcón", "pablo.a@duoc.cl", "Admin", "Activo"),
-    UserItem("ana.m", "Ana María Soto", "ana.m@duoc.cl", "Empleado", "Activo"),
-    UserItem("carlos.g", "Carlos Gómez", "carlos.g@duoc.cl", "Supervisor", "Inactivo"),
-    UserItem("laura.f", "Laura Fuentes", "laura.f@duoc.cl", "Empleado", "Activo"),
-    UserItem("miguel.r", "Miguel Rojas", "miguel.r@duoc.cl", "Admin", "Activo"),
-    UserItem("sofia.v", "Sofía Valdés", "sofia.v@duoc.cl", "Empleado", "Activo"),
-    UserItem("diego.c", "Diego Castro", "diego.c@duoc.cl", "Supervisor", "Activo"),
-    UserItem("javiera.h", "Javiera Herrera", "javiera.h@duoc.cl", "Empleado", "Inactivo")
-)
+import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserScreenCompact(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    usersViewModel: UsersViewModel = viewModel()
 ) {
-    var searchText by remember { mutableStateOf("") }
+    val uiState by usersViewModel.uiState.collectAsState()
+    var showFilters by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showToggleDialog by remember { mutableStateOf(false) }
+    var showAddUser by remember { mutableStateOf(false) }
+    var userToModify by remember { mutableStateOf<User?>(null) }
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
         showDrawer = true,
-        title = "Gestión de Usuarios"
+        title = "Usuarios",
+        actions = {
+            IconButton(onClick = { showFilters = true }) {
+                Icon(Icons.Default.FilterList, contentDescription = "Filtros")
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddUser = true }
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar usuario")
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -60,52 +65,167 @@ fun UserScreenCompact(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
+            // Campo de búsqueda
             OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                label = { Text("Buscar usuario por nombre o email") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                trailingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
+                value = uiState.query,
+                onValueChange = usersViewModel::onQueryChange,
+                label = { Text("Buscar por usuario, nombre o email") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = { Icon(Icons.Default.Search, null) },
+                singleLine = true
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // Tabla de usuarios
-            Box(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                LazyColumn(modifier = Modifier.width(500.dp)) { // Ancho ajustado para compact
-                    item {
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Usuario", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(120.dp)
-                                .padding(8.dp))
-                            Text("Nombre", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(200.dp)
-                                .padding(8.dp))
-                            Text("Estado", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(180.dp)
-                                .padding(8.dp))
+            Spacer(Modifier.height(8.dp))
+
+            // Chips con filtros activos
+            if (uiState.filters.selectedRoles.isNotEmpty() || uiState.filters.statusFilter != cl.duoc.maestranza_v2.model.UserStatusFilter.All) {
+                Row(Modifier.horizontalScroll(rememberScrollState())) {
+                    uiState.filters.selectedRoles.forEach { role ->
+                        val roleFormatted = when (role) {
+                            "ROLE_ADMINISTRADOR" -> "Administrador"
+                            "ROLE_AUDITOR" -> "Auditor"
+                            "ROLE_COMPRAS" -> "Compras"
+                            "ROLE_VENTAS" -> "Ventas"
+                            "ROLE_SUPERVISOR" -> "Supervisor"
+                            "ROLE_EMPLEADO" -> "Empleado"
+                            else -> role
                         }
-                        HorizontalDivider()
+                        AssistChip(
+                            onClick = { showFilters = true },
+                            label = { Text(roleFormatted) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Default.FilterList,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        )
+                        Spacer(Modifier.width(8.dp))
                     }
-                    items(dummyUserItems) { user ->
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(user.username, modifier = Modifier
-                                .width(120.dp)
-                                .padding(8.dp))
-                            Text(user.name, modifier = Modifier
-                                .width(200.dp)
-                                .padding(8.dp))
-                            Text(user.status, modifier = Modifier
-                                .width(180.dp)
-                                .padding(8.dp))
+
+                    if (uiState.filters.statusFilter != cl.duoc.maestranza_v2.model.UserStatusFilter.All) {
+                        AssistChip(
+                            onClick = { showFilters = true },
+                            label = { Text(uiState.filters.statusFilter.name) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Default.FilterList,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+
+            // Lista de usuarios con cards
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(uiState.filteredUsers, key = { it.id }) { user ->
+                    UserCard(
+                        user = user,
+                        onClick = { /* TODO: Detalle rápido */ },
+                        onEdit = { /* TODO: Editar usuario */ },
+                        onToggleActive = {
+                            userToModify = user
+                            showToggleDialog = true
+                        },
+                        onDelete = {
+                            userToModify = user
+                            showDeleteDialog = true
                         }
-                        HorizontalDivider()
-                    }
+                    )
                 }
             }
+        }
+
+        // Bottom sheet de filtros
+        if (showFilters) {
+            UsersFilterBottomSheet(
+                availableRoles = uiState.availableRoles,
+                selectedRoles = uiState.filters.selectedRoles,
+                statusFilter = uiState.filters.statusFilter,
+                onRoleToggle = usersViewModel::onRoleFilterChange,
+                onStatusFilterChange = usersViewModel::onStatusFilterChange,
+                onClear = usersViewModel::clearFilters,
+                onDismiss = { showFilters = false }
+            )
+        }
+
+        // Diálogo de confirmación para activar/desactivar
+        if (showToggleDialog && userToModify != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showToggleDialog = false
+                    userToModify = null
+                },
+                title = {
+                    Text(text = if (userToModify!!.activo) "Desactivar usuario" else "Activar usuario")
+                },
+                text = {
+                    Text(
+                        text = if (userToModify!!.activo) {
+                            "¿Desactivar al usuario \"${userToModify!!.username}\"? No podrá acceder al sistema."
+                        } else {
+                            "¿Activar al usuario \"${userToModify!!.username}\"?"
+                        }
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            usersViewModel.toggleUserActive(userToModify!!.id)
+                            showToggleDialog = false
+                            userToModify = null
+                        }
+                    ) {
+                        Text(if (userToModify!!.activo) "Desactivar" else "Activar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showToggleDialog = false
+                        userToModify = null
+                    }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        // Diálogo de confirmación para eliminar
+        if (showDeleteDialog && userToModify != null) {
+            cl.duoc.maestranza_v2.ui.components.DeleteConfirmationDialog(
+                showDialog = true,
+                productName = userToModify!!.username,
+                onDismiss = {
+                    showDeleteDialog = false
+                    userToModify = null
+                },
+                onConfirm = {
+                    usersViewModel.deleteUser(userToModify!!.id)
+                    showDeleteDialog = false
+                    userToModify = null
+                }
+            )
+        }
+
+        // Bottom sheet para agregar usuario
+        if (showAddUser) {
+            AddUserBottomSheet(
+                availableRoles = uiState.availableRoles,
+                existingUsers = uiState.users,
+                onDismiss = { showAddUser = false },
+                onUserAdded = { newUser ->
+                    usersViewModel.addUser(newUser)
+                    showAddUser = false
+                }
+            )
         }
     }
 }
