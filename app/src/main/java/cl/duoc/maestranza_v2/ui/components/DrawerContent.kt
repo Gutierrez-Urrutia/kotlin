@@ -29,9 +29,8 @@ fun DrawerContent(
 ) {
     val menuItems = listOf(
         DrawerMenuItem(Icons.Default.Inventory, "Inventario", Screen.Inventory),
-        DrawerMenuItem(Icons.Default.Person, "Usuarios", Screen.Users),
-        DrawerMenuItem(Icons.Default.Add, "Agregar Producto", Screen.AddProduct),
-        DrawerMenuItem(Icons.Default.SwapHoriz, "Movimientos", Screen.Movements)
+        DrawerMenuItem(Icons.Default.SwapHoriz, "Movimientos", Screen.Movements),
+        DrawerMenuItem(Icons.Default.Person, "Usuarios", Screen.Users)
     )
 
     Column(
