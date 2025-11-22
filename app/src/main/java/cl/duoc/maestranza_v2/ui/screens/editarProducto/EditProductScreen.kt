@@ -1,4 +1,4 @@
-package cl.duoc.maestranza_v2.ui.screens.agregarProducto
+package cl.duoc.maestranza_v2.ui.screens.editarProducto
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,23 +18,39 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
-import cl.duoc.maestranza_v2.viewmodel.AddProductViewModel
+import cl.duoc.maestranza_v2.viewmodel.EditProductViewModel
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddProductScreen(
+fun EditProductScreen(
     navController: NavController,
-    mainViewModel : MainViewModel,
-    viewModel: AddProductViewModel = viewModel()
+    mainViewModel: MainViewModel,
+    productCode: String,
+    viewModel: EditProductViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
     val inventoryList by mainViewModel.inventoryItems.collectAsState()
+    val product = mainViewModel.getProductByCode(productCode)
 
-    cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
-        navController = navController,
-        showDrawer = true,
-        title = "Agregar Producto"
+    // Cargar el producto cuando se monta el componente
+    LaunchedEffect(productCode) {
+        product?.let {
+            viewModel.loadProduct(it)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Editar Producto") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver atrás")
+                    }
+                }
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -43,7 +60,7 @@ fun AddProductScreen(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
-
+            // Código
             OutlinedTextField(
                 value = estado.codigo,
                 onValueChange = viewModel::onCodigoChange,
@@ -58,6 +75,7 @@ fun AddProductScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Nombre
             OutlinedTextField(
                 value = estado.nombre,
                 onValueChange = viewModel::onNombreChange,
@@ -71,6 +89,7 @@ fun AddProductScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Categoría
             OutlinedTextField(
                 value = estado.categoria,
                 onValueChange = viewModel::onCategoriaChange,
@@ -84,6 +103,7 @@ fun AddProductScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Descripción
             OutlinedTextField(
                 value = estado.descripcion,
                 onValueChange = viewModel::onDescripcionChange,
@@ -100,6 +120,7 @@ fun AddProductScreen(
                 maxLines = 5
             )
 
+            // Precio
             OutlinedTextField(
                 value = estado.precio,
                 onValueChange = viewModel::onPrecioChange,
@@ -116,11 +137,12 @@ fun AddProductScreen(
                 prefix = { Text("$") }
             )
 
+            // Stock
             OutlinedTextField(
                 value = estado.stock,
                 onValueChange = viewModel::onStockChange,
-                label = { Text("Stock Inicial") },
-                placeholder = { Text("Ej: 0") },
+                label = { Text("Stock") },
+                placeholder = { Text("Ej: 50") },
                 isError = estado.errores.stock != null,
                 supportingText = {
                     estado.errores.stock?.let {
@@ -130,12 +152,14 @@ fun AddProductScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
+            Spacer(modifier = Modifier.weight(1f))
 
+            // Botón Guardar Cambios
             Button(
                 onClick = {
-                    if (viewModel.validarFormulario(inventoryList)) {
-                        mainViewModel.addProduct(
+                    if (viewModel.validarFormulario(inventoryList, productCode)) {
+                        mainViewModel.updateProduct(
+                            originalCode = productCode,
                             code = estado.codigo,
                             name = estado.nombre,
                             category = estado.categoria,
@@ -148,7 +172,7 @@ fun AddProductScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Guardar Producto")
+                Text(text = "Guardar Cambios")
             }
         }
     }
@@ -157,9 +181,13 @@ fun AddProductScreen(
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
-fun AddProductScreenPreview() {
+fun EditProductScreenPreview() {
     Maestranza_V2Theme {
-        AddProductScreen(navController = rememberNavController(),
-            mainViewModel = MainViewModel())
+        EditProductScreen(
+            navController = rememberNavController(),
+            mainViewModel = MainViewModel(),
+            productCode = "HCOR-001"
+        )
     }
 }
+

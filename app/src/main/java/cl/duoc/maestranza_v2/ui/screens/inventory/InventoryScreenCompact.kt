@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.navigation.Screen
+import cl.duoc.maestranza_v2.ui.components.AddProductBottomSheet
 import cl.duoc.maestranza_v2.ui.components.FiltersBottomSheet
 import cl.duoc.maestranza_v2.ui.components.ProductCard
 import cl.duoc.maestranza_v2.ui.components.StockFilter
@@ -30,6 +31,8 @@ data class InventoryItem(
     val code: String,
     val name: String,
     val category: String,
+    val description: String = "",
+    val price: Double = 0.0,
     val stock: Int
 )
 
@@ -42,6 +45,7 @@ fun InventoryScreenCompact(
     val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
     var showFilters by remember { mutableStateOf(false) }
+    var showAddProduct by remember { mutableStateOf(false) }
 
     // Estados de filtros (hardcoded para demo)
     val categories = listOf("Herramientas", "Materiales", "Equipos", "Consumibles")
@@ -75,7 +79,7 @@ fun InventoryScreenCompact(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate(Screen.AddProduct.route) }
+                onClick = { showAddProduct = true }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar")
             }
@@ -141,7 +145,11 @@ fun InventoryScreenCompact(
                     ProductCard(
                         product = product,
                         onClick = { /* Navegar a detalle */ },
-                        onEdit = { /* Navegar a editar */ },
+                        onEdit = { productCode ->
+                            navController.navigate(
+                                cl.duoc.maestranza_v2.navigation.Screen.EditProduct.createRoute(productCode)
+                            )
+                        },
                         onDelete = { /* Mostrar diálogo de confirmación */ }
                     )
                 }
@@ -161,6 +169,17 @@ fun InventoryScreenCompact(
                     stockFilter = StockFilter.All
                 },
                 onDismiss = { showFilters = false }
+            )
+        }
+
+        // Bottom sheet para agregar producto
+        if (showAddProduct) {
+            AddProductBottomSheet(
+                inventoryList = inventoryList,
+                onDismiss = { showAddProduct = false },
+                onProductAdded = { code, name, category, description, price, stock ->
+                    viewModel.addProduct(code, name, category, description, price, stock)
+                }
             )
         }
     }

@@ -10,13 +10,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.agregarProducto.AddProductScreen
+import cl.duoc.maestranza_v2.ui.screens.editarProducto.EditProductScreen
 import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryScreen
 import cl.duoc.maestranza_v2.ui.screens.login.LoginScreen
 import cl.duoc.maestranza_v2.ui.screens.movimientos.MovementsScreen
@@ -70,6 +73,17 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.Movements.route){
                             MovementsScreen(navController = navController, viewModel = mainViewModel)
+                        }
+                        composable(
+                            route = Screen.EditProduct.route,
+                            arguments = listOf(navArgument("productCode") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val productCode = backStackEntry.arguments?.getString("productCode") ?: ""
+                            EditProductScreen(
+                                navController = navController,
+                                mainViewModel = mainViewModel,
+                                productCode = productCode
+                            )
                         }
                     }
                 }

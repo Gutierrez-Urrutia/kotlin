@@ -18,7 +18,7 @@ import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryItem
 fun ProductCard(
     product: InventoryItem,
     onClick: () -> Unit = {},
-    onEdit: () -> Unit = {},
+    onEdit: (String) -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
     Card(
@@ -103,7 +103,7 @@ fun ProductCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 IconButton(
-                    onClick = onEdit,
+                    onClick = { onEdit(product.code) },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(

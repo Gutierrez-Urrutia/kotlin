@@ -134,7 +134,11 @@ fun InventoryScreenExpanded(
                     ProductCard(
                         product = product,
                         onClick = { /* Navegar a detalle */ },
-                        onEdit = { /* Navegar a editar */ },
+                        onEdit = { productCode ->
+                            navController.navigate(
+                                cl.duoc.maestranza_v2.navigation.Screen.EditProduct.createRoute(productCode)
+                            )
+                        },
                         onDelete = { /* Mostrar diálogo de confirmación */ }
                     )
                 }
