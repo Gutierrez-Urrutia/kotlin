@@ -1,6 +1,7 @@
 package cl.duoc.maestranza_v2.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -19,6 +20,8 @@ fun ScaffoldWrapper(
     navController: NavController,
     showDrawer: Boolean = true,
     title: String = "Maestranza V2",
+    actions: @Composable RowScope.() -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -65,9 +68,11 @@ fun ScaffoldWrapper(
                                     contentDescription = "Menú"
                                 )
                             }
-                        }
+                        },
+                        actions = actions
                     )
-                }
+                },
+                floatingActionButton = floatingActionButton
             ) { innerPadding ->
                 content(innerPadding)
             }

@@ -22,8 +22,18 @@ class MainViewModel : ViewModel() {
 
     private val _inventoryItems = MutableStateFlow(
         listOf(
-            InventoryItem("HCOR-001", "Broca HSS 5mm", "Herramientas de Corte", 50),
-            InventoryItem("HCOR-002", "Broca HSS 10mm", "Herramientas de Corte", 35),
+            InventoryItem("HCOR-001", "Broca HSS 5mm", "Herramientas", 50),
+            InventoryItem("HCOR-002", "Broca HSS 10mm", "Herramientas", 35),
+            InventoryItem("HCOR-003", "Sierra Circular 7\"", "Herramientas", 8),
+            InventoryItem("MAT-001", "Lámina Acero Inox 1mm", "Materiales", 120),
+            InventoryItem("MAT-002", "Tubo Acero 2\" x 6m", "Materiales", 45),
+            InventoryItem("MAT-003", "Perfil Aluminio 40x40", "Materiales", 0),
+            InventoryItem("EQ-001", "Soldadora MIG 200A", "Equipos", 5),
+            InventoryItem("EQ-002", "Compresor 50L", "Equipos", 12),
+            InventoryItem("CONS-001", "Disco Corte 4.5\"", "Consumibles", 250),
+            InventoryItem("CONS-002", "Lija Grano 80", "Consumibles", 3),
+            InventoryItem("CONS-003", "Electrodo 6013 3.2mm", "Consumibles", 180),
+            InventoryItem("HCOR-004", "Juego Llaves Allen", "Herramientas", 22)
         )
     )
     val inventoryItems = _inventoryItems.asStateFlow()

@@ -8,22 +8,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.navigation.Screen
+import cl.duoc.maestranza_v2.ui.components.FiltersBottomSheet
+import cl.duoc.maestranza_v2.ui.components.ProductCard
+import cl.duoc.maestranza_v2.ui.components.StockFilter
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 
@@ -42,11 +41,45 @@ fun InventoryScreenCompact(
 ) {
     val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
+    var showFilters by remember { mutableStateOf(false) }
+
+    // Estados de filtros (hardcoded para demo)
+    val categories = listOf("Herramientas", "Materiales", "Equipos", "Consumibles")
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var stockFilter by remember { mutableStateOf(StockFilter.All) }
+
+    // Filtrar lista según búsqueda y filtros
+    val filteredList = remember(searchText, selectedCategory, stockFilter, inventoryList) {
+        inventoryList.filter { item ->
+            val matchesSearch = item.name.contains(searchText, ignoreCase = true) ||
+                    item.code.contains(searchText, ignoreCase = true)
+            val matchesCategory = selectedCategory == null || item.category == selectedCategory
+            val matchesStock = when (stockFilter) {
+                StockFilter.All -> true
+                StockFilter.InStock -> item.stock > 10
+                StockFilter.LowStock -> item.stock in 1..10
+                StockFilter.OutOfStock -> item.stock == 0
+            }
+            matchesSearch && matchesCategory && matchesStock
+        }
+    }
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
         showDrawer = true,
-        title = "Gestión de Inventario"
+        title = "Gestión de Inventario",
+        actions = {
+            IconButton(onClick = { showFilters = true }) {
+                Icon(Icons.Default.FilterList, contentDescription = "Filtros")
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate(Screen.AddProduct.route) }
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar")
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -54,51 +87,81 @@ fun InventoryScreenCompact(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
+            // Campo de búsqueda
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
-                label = { Text("Buscar en inventario") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                trailingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
+                label = { Text("Buscar por nombre o código") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = { Icon(Icons.Default.Search, null) },
+                singleLine = true
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
-            Box(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                LazyColumn(modifier = Modifier.width(500.dp)) {
-                    item {
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Código", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(120.dp)
-                                .padding(8.dp))
-                            Text("Nombre", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(200.dp)
-                                .padding(8.dp))
-                            Text("Categoría", fontWeight = FontWeight.Bold, modifier = Modifier
-                                .width(180.dp)
-                                .padding(8.dp))
+            Spacer(Modifier.height(8.dp))
+
+            // Chips con filtros activos
+            Row(Modifier.horizontalScroll(rememberScrollState())) {
+                selectedCategory?.let {
+                    AssistChip(
+                        onClick = { showFilters = true },
+                        label = { Text(it) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Default.FilterList,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
-                        Divider()
-                    }
-                    items(inventoryList) { item ->
-                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(item.code, modifier = Modifier
-                                .width(120.dp)
-                                .padding(8.dp))
-                            Text(item.name, modifier = Modifier
-                                .width(200.dp)
-                                .padding(8.dp))
-                            Text(item.category, modifier = Modifier
-                                .width(180.dp)
-                                .padding(8.dp))
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+                if (stockFilter != StockFilter.All) {
+                    AssistChip(
+                        onClick = { showFilters = true },
+                        label = { Text(stockFilter.name) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Default.FilterList,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
-                        Divider()
-                    }
+                    )
                 }
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Lista de productos con cards
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(filteredList, key = { it.code }) { product ->
+                    ProductCard(
+                        product = product,
+                        onClick = { /* Navegar a detalle */ },
+                        onEdit = { /* Navegar a editar */ },
+                        onDelete = { /* Mostrar diálogo de confirmación */ }
+                    )
+                }
+            }
+        }
+
+        // Bottom sheet de filtros
+        if (showFilters) {
+            FiltersBottomSheet(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                stockFilter = stockFilter,
+                onCategorySelected = { selectedCategory = it },
+                onStockFilterSelected = { stockFilter = it },
+                onClear = {
+                    selectedCategory = null
+                    stockFilter = StockFilter.All
+                },
+                onDismiss = { showFilters = false }
+            )
         }
     }
 }
