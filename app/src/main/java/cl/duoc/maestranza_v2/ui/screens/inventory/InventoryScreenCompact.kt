@@ -42,49 +42,11 @@ fun InventoryScreenCompact(
 ) {
     val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
-    val items = listOf(Screen.Inventory, Screen.Users)
-    var selectedItem by remember { mutableStateOf(0) }
 
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Gestión de Inventario") },
-                navigationIcon = {
-                    IconButton(onClick = { /* Acción futura */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menú")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Acción futura */}) {
-                        Icon(Icons.Default.Person, contentDescription = "Opciones de Usuario")
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            NavigationBar {
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            // Usamos el ViewModel para navegar, igual que en la guía
-                            viewModel.navigateTo(screen)
-                        },
-                        label = { Text(text = screen.route.replaceFirstChar { it.uppercase() }) },
-                        icon = {
-                            Icon(
-                                imageVector = if (screen == Screen.Inventory) Icons.Default.Inventory else Icons.Default.Person,
-                                contentDescription = screen.route
-                            )
-                        }
-                    )
-                }
-            }
-        }
-
-
+    cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
+        navController = navController,
+        showDrawer = true,
+        title = "Gestión de Inventario"
     ) { innerPadding ->
         Column(
             modifier = Modifier

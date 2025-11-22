@@ -19,6 +19,7 @@ import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.agregarProducto.AddProductScreen
 import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryScreen
 import cl.duoc.maestranza_v2.ui.screens.login.LoginScreen
+import cl.duoc.maestranza_v2.ui.screens.movimientos.MovementsScreen
 import cl.duoc.maestranza_v2.ui.screens.user.UsersScreen
 
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
@@ -66,6 +67,9 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 mainViewModel = mainViewModel
                             )
+                        }
+                        composable(route = Screen.Movements.route){
+                            MovementsScreen(navController = navController, viewModel = mainViewModel)
                         }
                     }
                 }

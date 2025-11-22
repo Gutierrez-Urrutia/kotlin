@@ -30,17 +30,10 @@ fun AddProductScreen(
     val inventoryList by mainViewModel.inventoryItems.collectAsState()
     val context = LocalContext.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Agregar Producto") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver atrás")
-                    }
-                }
-            )
-        }
+    cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
+        navController = navController,
+        showDrawer = true,
+        title = "Agregar Producto"
     ) { innerPadding ->
         Column(
             modifier = Modifier
