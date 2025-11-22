@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.components.AddProductBottomSheet
+import cl.duoc.maestranza_v2.ui.components.DeleteConfirmationDialog
 import cl.duoc.maestranza_v2.ui.components.FiltersBottomSheet
 import cl.duoc.maestranza_v2.ui.components.ProductCard
 import cl.duoc.maestranza_v2.ui.components.StockFilter
@@ -37,6 +38,8 @@ fun InventoryScreenMedium(
     var searchText by remember { mutableStateOf("") }
     var showFilters by remember { mutableStateOf(false) }
     var showAddProduct by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var productToDelete by remember { mutableStateOf<InventoryItem?>(null) }
 
     // Estados de filtros (hardcoded para demo)
     val categories = listOf("Herramientas", "Materiales", "Equipos", "Consumibles")
@@ -141,7 +144,10 @@ fun InventoryScreenMedium(
                                 cl.duoc.maestranza_v2.navigation.Screen.EditProduct.createRoute(productCode)
                             )
                         },
-                        onDelete = { /* Mostrar diálogo de confirmación */ }
+                        onDelete = {
+                            productToDelete = product
+                            showDeleteDialog = true
+                        }
                     )
                 }
             }
@@ -173,6 +179,21 @@ fun InventoryScreenMedium(
                 }
             )
         }
+
+        // Diálogo de confirmación de eliminación
+        DeleteConfirmationDialog(
+            showDialog = showDeleteDialog,
+            productName = productToDelete?.name ?: "",
+            onDismiss = {
+                showDeleteDialog = false
+                productToDelete = null
+            },
+            onConfirm = {
+                // TODO: Implementar lógica de eliminación
+                showDeleteDialog = false
+                productToDelete = null
+            }
+        )
     }
 }
 
