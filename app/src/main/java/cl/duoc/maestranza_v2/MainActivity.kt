@@ -20,12 +20,14 @@ import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.agregarProducto.AddProductScreen
 import cl.duoc.maestranza_v2.ui.screens.editarProducto.EditProductScreen
+import cl.duoc.maestranza_v2.ui.screens.editarUsuario.EditUserScreen
 import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryScreen
 import cl.duoc.maestranza_v2.ui.screens.login.LoginScreen
 import cl.duoc.maestranza_v2.ui.screens.movimientos.MovementsScreen
 import cl.duoc.maestranza_v2.ui.screens.user.UsersScreen
 
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
+import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -83,6 +85,19 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 mainViewModel = mainViewModel,
                                 productCode = productCode
+                            )
+                        }
+                        composable(
+                            route = Screen.EditUser.route,
+                            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                            val usersViewModel: UsersViewModel = viewModel()
+                            EditUserScreen(
+                                navController = navController,
+                                mainViewModel = mainViewModel,
+                                usersViewModel = usersViewModel,
+                                userId = userId
                             )
                         }
                     }

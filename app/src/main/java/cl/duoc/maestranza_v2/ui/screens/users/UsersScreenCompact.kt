@@ -130,7 +130,11 @@ fun UserScreenCompact(
                     UserCard(
                         user = user,
                         onClick = { /* TODO: Detalle rápido */ },
-                        onEdit = { /* TODO: Editar usuario */ },
+                        onEdit = { userId ->
+                            navController.navigate(
+                                cl.duoc.maestranza_v2.navigation.Screen.EditUser.createRoute(userId)
+                            )
+                        },
                         onToggleActive = {
                             userToModify = user
                             showToggleDialog = true

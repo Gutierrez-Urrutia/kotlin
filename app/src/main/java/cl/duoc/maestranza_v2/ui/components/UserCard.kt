@@ -22,7 +22,7 @@ import cl.duoc.maestranza_v2.model.User
 fun UserCard(
     user: User,
     onClick: () -> Unit = {},
-    onEdit: () -> Unit = {},
+    onEdit: (String) -> Unit = {},
     onToggleActive: () -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
@@ -167,7 +167,7 @@ fun UserCard(
                         text = { Text("Editar") },
                         onClick = {
                             showMenu = false
-                            onEdit()
+                            onEdit(user.id)
                         },
                         leadingIcon = {
                             Icon(Icons.Default.Edit, contentDescription = null)
