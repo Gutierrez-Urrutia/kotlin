@@ -41,6 +41,7 @@ fun MovementsScreenCompact(
     var showFilters by remember { mutableStateOf(false) }
     var showDetailSheet by remember { mutableStateOf(false) }
     var selectedMovement by remember { mutableStateOf<cl.duoc.maestranza_v2.model.Movement?>(null) }
+    var showNuevoMovimiento by remember { mutableStateOf(false) }
 
     // Estados para date pickers
     var showStartPicker by remember { mutableStateOf(false) }
@@ -57,7 +58,7 @@ fun MovementsScreenCompact(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Nuevo movimiento */ }
+                onClick = { showNuevoMovimiento = true }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nuevo movimiento")
             }
@@ -215,6 +216,15 @@ fun MovementsScreenCompact(
                 onDismiss = {
                     showEndPicker = false
                     showStartPicker = true
+                }
+            )
+        }
+
+        if (showNuevoMovimiento) {
+            cl.duoc.maestranza_v2.ui.components.NuevoMovimientoBottomSheet(
+                onDismiss = { showNuevoMovimiento = false },
+                onSuccess = {
+                    movementsViewModel.refreshMovements()
                 }
             )
         }

@@ -242,6 +242,12 @@ class MovementsViewModel : ViewModel() {
         applyFilters()
     }
 
+    fun refreshMovements() {
+        // Recalcular datos después de agregar un nuevo movimiento
+        calculateKPIs()
+        applyFilters()
+    }
+
     fun getMovementById(id: String): Movement? {
         return _uiState.value.movements.find { it.id == id }
     }
