@@ -69,7 +69,7 @@ fun UserScreenExpanded(
             OutlinedTextField(
                 value = uiState.query,
                 onValueChange = usersViewModel::onQueryChange,
-                label = { Text("Buscar por usuario, nombre o email") },
+                label = { Text("Buscar usuario, nombre o email") },
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = { Icon(Icons.Default.Search, null) },
                 singleLine = true
