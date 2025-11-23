@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import cl.duoc.maestranza_v2.data.model.Movement
+import cl.duoc.maestranza_v2.data.model.MovementTypeFilter
 import cl.duoc.maestranza_v2.ui.components.DateRangePickerDialog
 import cl.duoc.maestranza_v2.ui.components.KPICard
 import cl.duoc.maestranza_v2.ui.components.MovementCard
@@ -28,7 +30,6 @@ import cl.duoc.maestranza_v2.ui.components.MovementsFilterBottomSheet
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.MovementsViewModel
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun MovementsScreenMedium(
     val uiState by movementsViewModel.uiState.collectAsState()
     var showFilters by remember { mutableStateOf(false) }
     var showDetailSheet by remember { mutableStateOf(false) }
-    var selectedMovement by remember { mutableStateOf<cl.duoc.maestranza_v2.model.Movement?>(null) }
+    var selectedMovement by remember { mutableStateOf<Movement?>(null) }
     var showNuevoMovimiento by remember { mutableStateOf(false) }
 
     var showStartPicker by remember { mutableStateOf(false) }
@@ -79,9 +80,9 @@ fun MovementsScreenMedium(
                     value = uiState.kpiTotal,
                     icon = Icons.AutoMirrored.Filled.List,
                     modifier = Modifier.weight(1f),
-                    isSelected = uiState.typeFilter == cl.duoc.maestranza_v2.model.MovementTypeFilter.All,
+                    isSelected = uiState.typeFilter == MovementTypeFilter.All,
                     onClick = {
-                        movementsViewModel.onTypeFilterChange(cl.duoc.maestranza_v2.model.MovementTypeFilter.All)
+                        movementsViewModel.onTypeFilterChange(MovementTypeFilter.All)
                     }
                 )
                 KPICard(
@@ -92,9 +93,9 @@ fun MovementsScreenMedium(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
                     modifier = Modifier.weight(1f),
-                    isSelected = uiState.typeFilter == cl.duoc.maestranza_v2.model.MovementTypeFilter.Entrada,
+                    isSelected = uiState.typeFilter == MovementTypeFilter.Entrada,
                     onClick = {
-                        movementsViewModel.onTypeFilterChange(cl.duoc.maestranza_v2.model.MovementTypeFilter.Entrada)
+                        movementsViewModel.onTypeFilterChange(MovementTypeFilter.Entrada)
                     }
                 )
                 KPICard(
@@ -105,9 +106,9 @@ fun MovementsScreenMedium(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
                     modifier = Modifier.weight(1f),
-                    isSelected = uiState.typeFilter == cl.duoc.maestranza_v2.model.MovementTypeFilter.Salida,
+                    isSelected = uiState.typeFilter == MovementTypeFilter.Salida,
                     onClick = {
-                        movementsViewModel.onTypeFilterChange(cl.duoc.maestranza_v2.model.MovementTypeFilter.Salida)
+                        movementsViewModel.onTypeFilterChange(MovementTypeFilter.Salida)
                     }
                 )
             }

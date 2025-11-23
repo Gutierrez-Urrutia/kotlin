@@ -2,9 +2,9 @@ package cl.duoc.maestranza_v2.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.maestranza_v2.model.User
-import cl.duoc.maestranza_v2.model.UserFilters
-import cl.duoc.maestranza_v2.model.UserStatusFilter
+import cl.duoc.maestranza_v2.data.model.User
+import cl.duoc.maestranza_v2.data.model.UserFilters
+import cl.duoc.maestranza_v2.data.model.UserStatusFilter
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

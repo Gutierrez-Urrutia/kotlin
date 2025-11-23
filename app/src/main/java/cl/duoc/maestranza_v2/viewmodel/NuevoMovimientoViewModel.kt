@@ -3,8 +3,9 @@ package cl.duoc.maestranza_v2.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.maestranza_v2.model.Movement
-import cl.duoc.maestranza_v2.model.MovementType
+import cl.duoc.maestranza_v2.data.model.Movement
+import cl.duoc.maestranza_v2.data.model.MovementType
+import cl.duoc.maestranza_v2.data.model.SimpleProducto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,13 +13,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
-// Data classes para estado del formulario
-data class SimpleProducto(
-    val id: String,
-    val codigo: String,
-    val nombre: String,
-    val stock: Int
-)
 
 enum class ComprobanteSource { GALERIA, CAMARA }
 enum class FormField { TIPO, PRODUCTO, CANTIDAD }

@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cl.duoc.maestranza_v2.model.MovementType
+import cl.duoc.maestranza_v2.data.model.MovementType
 import cl.duoc.maestranza_v2.viewmodel.ComprobanteSource
 import cl.duoc.maestranza_v2.viewmodel.FormField
 import cl.duoc.maestranza_v2.viewmodel.NuevoMovimientoViewModel

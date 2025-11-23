@@ -2,9 +2,9 @@ package cl.duoc.maestranza_v2.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.maestranza_v2.model.Movement
-import cl.duoc.maestranza_v2.model.MovementType
-import cl.duoc.maestranza_v2.model.MovementTypeFilter
+import cl.duoc.maestranza_v2.data.model.Movement
+import cl.duoc.maestranza_v2.data.model.MovementType
+import cl.duoc.maestranza_v2.data.model.MovementTypeFilter
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

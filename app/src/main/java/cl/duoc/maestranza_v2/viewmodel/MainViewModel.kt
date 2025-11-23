@@ -3,7 +3,7 @@ package cl.duoc.maestranza_v2.viewmodel
 import androidx.lifecycle.ViewModel
 import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
-import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryItem
+import cl.duoc.maestranza_v2.data.model.InventoryItem
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

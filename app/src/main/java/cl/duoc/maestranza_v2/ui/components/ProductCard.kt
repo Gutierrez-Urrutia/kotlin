@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryItem
+import cl.duoc.maestranza_v2.data.model.InventoryItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

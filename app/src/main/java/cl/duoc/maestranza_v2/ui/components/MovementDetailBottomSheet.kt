@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import cl.duoc.maestranza_v2.model.Movement
-import cl.duoc.maestranza_v2.model.MovementType
+import cl.duoc.maestranza_v2.data.model.Movement
+import cl.duoc.maestranza_v2.data.model.MovementType
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)

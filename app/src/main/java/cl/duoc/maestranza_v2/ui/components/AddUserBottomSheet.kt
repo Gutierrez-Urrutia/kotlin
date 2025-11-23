@@ -19,8 +19,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cl.duoc.maestranza_v2.model.User
+import cl.duoc.maestranza_v2.data.model.User
 import cl.duoc.maestranza_v2.viewmodel.AddUserViewModel
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -311,7 +312,7 @@ fun AddUserBottomSheet(
                             addUserViewModel.setLoading(true)
                             // Crear nuevo usuario
                             val newUser = User(
-                                id = java.util.UUID.randomUUID().toString(),
+                                id = UUID.randomUUID().toString(),
                                 username = state.username,
                                 nombre = state.nombre,
                                 apellido = state.apellido,

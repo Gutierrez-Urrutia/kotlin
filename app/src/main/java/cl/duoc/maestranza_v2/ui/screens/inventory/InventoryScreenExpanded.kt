@@ -26,6 +26,7 @@ import cl.duoc.maestranza_v2.ui.components.ProductCard
 import cl.duoc.maestranza_v2.ui.components.StockFilter
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.data.model.InventoryItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,8 +1,8 @@
 package cl.duoc.maestranza_v2.viewmodel
 
 import androidx.lifecycle.ViewModel
-import cl.duoc.maestranza_v2.model.AddUserErrors
-import cl.duoc.maestranza_v2.model.User
+import cl.duoc.maestranza_v2.data.model.AddUserErrors
+import cl.duoc.maestranza_v2.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

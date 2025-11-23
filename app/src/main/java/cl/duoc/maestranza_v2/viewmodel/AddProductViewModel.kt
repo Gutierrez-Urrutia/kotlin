@@ -1,9 +1,9 @@
 package cl.duoc.maestranza_v2.viewmodel
 
 import androidx.lifecycle.ViewModel
-import cl.duoc.maestranza_v2.model.AddProductErrors
-import cl.duoc.maestranza_v2.model.AddProductState
-import cl.duoc.maestranza_v2.ui.screens.inventory.InventoryItem
+import cl.duoc.maestranza_v2.data.model.AddProductErrors
+import cl.duoc.maestranza_v2.data.model.AddProductState
+import cl.duoc.maestranza_v2.data.model.InventoryItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

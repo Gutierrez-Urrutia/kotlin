@@ -1,4 +1,4 @@
-package cl.duoc.maestranza_v2.model
+package cl.duoc.maestranza_v2.data.model
 
 data class AddProductErrors(
     val codigo: String? = null,

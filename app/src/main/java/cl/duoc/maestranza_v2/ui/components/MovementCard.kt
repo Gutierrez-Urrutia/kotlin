@@ -4,16 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cl.duoc.maestranza_v2.model.Movement
-import cl.duoc.maestranza_v2.model.MovementType
-import java.time.format.DateTimeFormatter
+import cl.duoc.maestranza_v2.data.model.Movement
+import cl.duoc.maestranza_v2.data.model.MovementType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

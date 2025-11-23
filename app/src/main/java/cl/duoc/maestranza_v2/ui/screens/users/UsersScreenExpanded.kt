@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cl.duoc.maestranza_v2.model.User
+import cl.duoc.maestranza_v2.data.model.User
+import cl.duoc.maestranza_v2.data.model.UserStatusFilter
 import cl.duoc.maestranza_v2.ui.components.AddUserBottomSheet
 import cl.duoc.maestranza_v2.ui.components.UserCard
 import cl.duoc.maestranza_v2.ui.components.UsersFilterBottomSheet
@@ -78,7 +79,7 @@ fun UserScreenExpanded(
             Spacer(Modifier.height(8.dp))
 
             // Chips con filtros activos
-            if (uiState.filters.selectedRoles.isNotEmpty() || uiState.filters.statusFilter != cl.duoc.maestranza_v2.model.UserStatusFilter.All) {
+            if (uiState.filters.selectedRoles.isNotEmpty() || uiState.filters.statusFilter != UserStatusFilter.All) {
                 Row(Modifier.horizontalScroll(rememberScrollState())) {
                     uiState.filters.selectedRoles.forEach { role ->
                         val roleFormatted = when (role) {
@@ -104,7 +105,7 @@ fun UserScreenExpanded(
                         Spacer(Modifier.width(8.dp))
                     }
 
-                    if (uiState.filters.statusFilter != cl.duoc.maestranza_v2.model.UserStatusFilter.All) {
+                    if (uiState.filters.statusFilter != UserStatusFilter.All) {
                         AssistChip(
                             onClick = { showFilters = true },
                             label = { Text(uiState.filters.statusFilter.name) },
