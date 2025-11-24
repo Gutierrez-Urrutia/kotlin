@@ -6,11 +6,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.maestranza_v2.data.model.InventoryItem
@@ -21,10 +22,21 @@ import cl.duoc.maestranza_v2.viewmodel.AddProductViewModel
 fun AddProductBottomSheet(
     inventoryList: List<InventoryItem>,
     onDismiss: () -> Unit,
-    onProductAdded: (code: String, name: String, category: String, description: String, price: Double, stock: Int) -> Unit,
-    viewModel: AddProductViewModel = viewModel()
+    onProductAdded: (code: String, name: String, category: String, description: String, price: Double, stock: Int) -> Unit
 ) {
+    val context = LocalContext.current
+    val viewModel: AddProductViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return AddProductViewModel(context) as T
+            }
+        }
+    )
+
     val estado by viewModel.estado.collectAsState()
+    val categorias by viewModel.categorias.collectAsState()
+    var categoriasExpanded by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = {
@@ -103,24 +115,43 @@ fun AddProductBottomSheet(
                     singleLine = true
                 )
 
-                // Categoría
-                OutlinedTextField(
-                    value = estado.categoria,
-                    onValueChange = viewModel::onCategoriaChange,
-                    label = { Text("Categoría") },
-                    placeholder = { Text("Ej: Herramientas") },
-                    isError = estado.errores.categoria != null,
-                    supportingText = {
-                        estado.errores.categoria?.let {
-                            Text(text = it, color = MaterialTheme.colorScheme.error)
-                        } ?: Text(
-                            text = "Herramientas, Materiales, Equipos, Consumibles",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                // Categoría (Dropdown)
+                ExposedDropdownMenuBox(
+                    expanded = categoriasExpanded,
+                    onExpandedChange = { categoriasExpanded = !categoriasExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = estado.categoria,
+                        onValueChange = viewModel::onCategoriaChange,
+                        label = { Text("Categoría") },
+                        isError = estado.errores.categoria != null,
+                        supportingText = {
+                            estado.errores.categoria?.let {
+                                Text(text = it, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoriasExpanded) }
+                    )
+                    ExposedDropdownMenu(
+                        expanded = categoriasExpanded,
+                        onDismissRequest = { categoriasExpanded = false }
+                    ) {
+                        categorias.forEach { categoria ->
+                            DropdownMenuItem(
+                                text = { Text(categoria.nombre) },
+                                onClick = {
+                                    viewModel.onCategoriaChange(categoria.nombre)
+                                    categoriasExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 // Descripción (opcional)
                 OutlinedTextField(

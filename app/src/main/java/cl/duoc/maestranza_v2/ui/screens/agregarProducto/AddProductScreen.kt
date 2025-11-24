@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,19 +16,26 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.AddProductViewModel
-import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
+import cl.duoc.maestranza_v2.viewmodel.InventoryViewModel
+import cl.duoc.maestranza_v2.viewmodel.InventoryState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductScreen(
     navController: NavController,
-    mainViewModel : MainViewModel,
     authViewModel: AuthViewModel? = null,
-    viewModel: AddProductViewModel = viewModel()
+    addProductViewModel: AddProductViewModel = viewModel()
 ) {
-    val estado by viewModel.estado.collectAsState()
-    val inventoryList by mainViewModel.inventoryItems.collectAsState()
+    val estado by addProductViewModel.estado.collectAsState()
+
+    // Obtener InventoryViewModel para leer inventario y operar via API
+    val inventoryViewModel: InventoryViewModel = viewModel()
+    val inventoryState by inventoryViewModel.inventoryState.collectAsState()
+    val inventoryList = when (inventoryState) {
+        is InventoryState.Success -> (inventoryState as InventoryState.Success).items
+        else -> emptyList()
+    }
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
@@ -49,7 +54,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.codigo,
-                onValueChange = viewModel::onCodigoChange,
+                onValueChange = addProductViewModel::onCodigoChange,
                 label = { Text("Código del Producto") },
                 placeholder = { Text("Ej: HCOR-001") },
                 isError = estado.errores.codigo != null,
@@ -63,7 +68,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.nombre,
-                onValueChange = viewModel::onNombreChange,
+                onValueChange = addProductViewModel::onNombreChange,
                 label = { Text("Nombre del Producto") },
                 isError = estado.errores.nombre != null,
                 supportingText = {
@@ -76,7 +81,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.categoria,
-                onValueChange = viewModel::onCategoriaChange,
+                onValueChange = addProductViewModel::onCategoriaChange,
                 label = { Text("Categoría") },
                 isError = estado.errores.categoria != null,
                 supportingText = {
@@ -89,7 +94,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.descripcion,
-                onValueChange = viewModel::onDescripcionChange,
+                onValueChange = addProductViewModel::onDescripcionChange,
                 label = { Text("Descripción (Opcional)") },
                 placeholder = { Text("Ej: Broca de acero templado para metal") },
                 isError = estado.errores.descripcion != null,
@@ -105,7 +110,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.precio,
-                onValueChange = viewModel::onPrecioChange,
+                onValueChange = addProductViewModel::onPrecioChange,
                 label = { Text("Precio") },
                 placeholder = { Text("Ej: 1500") },
                 isError = estado.errores.precio != null,
@@ -121,7 +126,7 @@ fun AddProductScreen(
 
             OutlinedTextField(
                 value = estado.stock,
-                onValueChange = viewModel::onStockChange,
+                onValueChange = addProductViewModel::onStockChange,
                 label = { Text("Stock Inicial") },
                 placeholder = { Text("Ej: 0") },
                 isError = estado.errores.stock != null,
@@ -137,8 +142,9 @@ fun AddProductScreen(
 
             Button(
                 onClick = {
-                    if (viewModel.validarFormulario(inventoryList)) {
-                        mainViewModel.addProduct(
+                    if (addProductViewModel.validarFormulario(inventoryList)) {
+                        // Llamar al InventoryViewModel para crear el producto vía API
+                        inventoryViewModel.addProduct(
                             code = estado.codigo,
                             name = estado.nombre,
                             category = estado.categoria,
@@ -162,7 +168,6 @@ fun AddProductScreen(
 @Composable
 fun AddProductScreenPreview() {
     Maestranza_V2Theme {
-        AddProductScreen(navController = rememberNavController(),
-            mainViewModel = MainViewModel())
+        AddProductScreen(navController = rememberNavController())
     }
 }

@@ -1,20 +1,58 @@
 package cl.duoc.maestranza_v2.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cl.duoc.maestranza_v2.data.model.AddProductErrors
 import cl.duoc.maestranza_v2.data.model.AddProductState
+import cl.duoc.maestranza_v2.data.model.CategoriaDTO
 import cl.duoc.maestranza_v2.data.model.InventoryItem
+import cl.duoc.maestranza_v2.data.remote.ApiClient
+import cl.duoc.maestranza_v2.data.repository.InventoryRepository
+import cl.duoc.maestranza_v2.data.repository.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class AddProductViewModel : ViewModel() {
+class AddProductViewModel(context: Context? = null) : ViewModel() {
+
+    private val inventoryRepository = context?.let { InventoryRepository(ApiClient(it)) }
 
     private val _estado = MutableStateFlow(AddProductState())
     val estado: StateFlow<AddProductState> = _estado.asStateFlow()
 
+    private val _categorias = MutableStateFlow<List<CategoriaDTO>>(emptyList())
+    val categorias: StateFlow<List<CategoriaDTO>> = _categorias.asStateFlow()
+
+    private val _categoriasLoading = MutableStateFlow(false)
+    val categoriasLoading: StateFlow<Boolean> = _categoriasLoading.asStateFlow()
+
     private val formatoCodigoRegex = Regex("^[A-Z]{4}-\\d{3}$")
+
+    init {
+        loadCategorias()
+    }
+
+    fun loadCategorias() {
+        if (inventoryRepository == null) return
+
+        viewModelScope.launch {
+            _categoriasLoading.update { true }
+            val result = inventoryRepository.getCategorias()
+            when (result) {
+                is Result.Success -> {
+                    _categorias.update { result.data }
+                }
+                is Result.Error -> {
+                    // Error al cargar categorías, pero continuamos
+                }
+                is Result.Loading -> {}
+            }
+            _categoriasLoading.update { false }
+        }
+    }
 
     fun onCodigoChange(codigo: String) {
         _estado.update { it.copy(codigo = codigo.uppercase()) }

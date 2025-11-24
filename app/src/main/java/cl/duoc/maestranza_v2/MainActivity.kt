@@ -96,7 +96,6 @@ class MainActivity : FragmentActivity() {
                         composable(route = Screen.AddProduct.route){
                             AddProductScreen(
                                 navController = navController,
-                                mainViewModel = mainViewModel,
                                 authViewModel = authViewModel
                             )
                         }
@@ -110,7 +109,6 @@ class MainActivity : FragmentActivity() {
                             val productCode = backStackEntry.arguments?.getString("productCode") ?: ""
                             EditProductScreen(
                                 navController = navController,
-                                mainViewModel = mainViewModel,
                                 productCode = productCode,
                                 authViewModel = authViewModel
                             )
