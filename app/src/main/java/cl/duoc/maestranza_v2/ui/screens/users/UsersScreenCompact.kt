@@ -1,6 +1,5 @@
 package cl.duoc.maestranza_v2.ui.screens.users
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,9 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.data.model.User
@@ -35,9 +36,13 @@ import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 fun UserScreenCompact(
     navController: NavController,
     viewModel: MainViewModel,
-    authViewModel: AuthViewModel? = null,
-    usersViewModel: UsersViewModel = viewModel()
+    authViewModel: AuthViewModel? = null
 ) {
+    val context = LocalContext.current
+    val usersViewModel = remember {
+        UsersViewModel(context = context)
+    }
+
     val uiState by usersViewModel.uiState.collectAsState()
     var showFilters by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -125,29 +130,86 @@ fun UserScreenCompact(
                 Spacer(Modifier.height(8.dp))
             }
 
-            // Lista de usuarios con cards
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(uiState.filteredUsers, key = { it.id }) { user ->
-                    UserCard(
-                        user = user,
-                        onClick = { /* TODO: Detalle rápido */ },
-                        onEdit = { userId ->
-                            navController.navigate(
-                                cl.duoc.maestranza_v2.navigation.Screen.EditUser.createRoute(userId)
-                            )
-                        },
-                        onToggleActive = {
-                            userToModify = user
-                            showToggleDialog = true
-                        },
-                        onDelete = {
-                            userToModify = user
-                            showDeleteDialog = true
+            // Mostrar carga, error o lista
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(16.dp))
+                            Text("Cargando usuarios...")
                         }
-                    )
+                    }
+                }
+                uiState.error != null -> {
+                    uiState.error?.let { errorMessage ->
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Error,
+                                    contentDescription = "Error",
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    "Error al cargar usuarios",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    errorMessage,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(Modifier.height(24.dp))
+                                Button(onClick = { usersViewModel.retry() }) {
+                                    Text("Reintentar")
+                                }
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    // Lista de usuarios con cards
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(uiState.filteredUsers, key = { it.id }) { user ->
+                            UserCard(
+                                user = user,
+                                onClick = { /* TODO: Detalle rápido */ },
+                                onEdit = { userId ->
+                                    navController.navigate(
+                                        cl.duoc.maestranza_v2.navigation.Screen.EditUser.createRoute(userId)
+                                    )
+                                },
+                                onToggleActive = {
+                                    userToModify = user
+                                    showToggleDialog = true
+                                },
+                                onDelete = {
+                                    userToModify = user
+                                    showDeleteDialog = true
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -238,7 +300,6 @@ fun UserScreenCompact(
     }
 }
 
-@SuppressLint("ViewModelConstructorInComposable")
 @Preview(
     showBackground = true,
     name = "User Compact",
@@ -247,10 +308,16 @@ fun UserScreenCompact(
 @Composable
 fun UserScreenCompactPreview() {
     Maestranza_V2Theme {
-        UserScreenCompact(
-            navController = rememberNavController(),
-            viewModel = MainViewModel()
-        )
+        // Preview deshabilitado debido a dependencias de contexto
+        // Para ver el preview, ejecuta la aplicación en un dispositivo o emulador
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Vista previa deshabilitada - Ejecuta la app para ver esta pantalla")
+        }
     }
 }
 

@@ -37,3 +37,18 @@ data class UserFilters(
     val statusFilter: UserStatusFilter = UserStatusFilter.All
 )
 
+/**
+ * Extensión para mapear UsuarioDTO a User
+ */
+fun UsuarioDTO.toUser(): User {
+    return User(
+        id = this.id.toString(),
+        username = this.username,
+        nombre = this.nombre,
+        apellido = this.apellido,
+        email = this.email,
+        activo = this.activo,
+        roles = this.roles
+    )
+}
+

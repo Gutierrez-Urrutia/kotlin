@@ -1,16 +1,21 @@
 package cl.duoc.maestranza_v2.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.maestranza_v2.data.model.User
 import cl.duoc.maestranza_v2.data.model.UserFilters
 import cl.duoc.maestranza_v2.data.model.UserStatusFilter
+import cl.duoc.maestranza_v2.data.model.toUser
+import cl.duoc.maestranza_v2.data.remote.ApiClient
+import cl.duoc.maestranza_v2.data.repository.Result
+import cl.duoc.maestranza_v2.data.repository.UsersRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
-class UsersViewModel : ViewModel() {
+class UsersViewModel(context: Context? = null) : ViewModel() {
 
     data class UsersUiState(
         val users: List<User> = emptyList(),
@@ -29,11 +34,14 @@ class UsersViewModel : ViewModel() {
         val error: String? = null
     )
 
-
     private val _uiState = MutableStateFlow(UsersUiState())
     val uiState: StateFlow<UsersUiState> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
+
+    private val usersRepository: UsersRepository? = context?.let {
+        UsersRepository(ApiClient(it))
+    }
 
     init {
         loadUsers()
@@ -50,88 +58,126 @@ class UsersViewModel : ViewModel() {
     }
 
     private fun loadUsers() {
-        // Datos hardcoded para demo
-        val users = listOf(
-            User(
-                id = "1",
-                username = "admin",
-                nombre = "Juan",
-                apellido = "Pérez",
-                email = "juan.perez@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_ADMINISTRADOR")
-            ),
-            User(
-                id = "2",
-                username = "auditor1",
-                nombre = "María",
-                apellido = "González",
-                email = "maria.gonzalez@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_AUDITOR")
-            ),
-            User(
-                id = "3",
-                username = "compras1",
-                nombre = "Carlos",
-                apellido = "Rodríguez",
-                email = "carlos.rodriguez@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_COMPRAS")
-            ),
-            User(
-                id = "4",
-                username = "ventas1",
-                nombre = "Ana",
-                apellido = "Martínez",
-                email = "ana.martinez@maestranza.cl",
-                activo = false,
-                roles = listOf("ROLE_VENTAS")
-            ),
-            User(
-                id = "5",
-                username = "supervisor1",
-                nombre = "Luis",
-                apellido = "Fernández",
-                email = "luis.fernandez@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_SUPERVISOR", "ROLE_EMPLEADO")
-            ),
-            User(
-                id = "6",
-                username = "empleado1",
-                nombre = "Patricia",
-                apellido = "López",
-                email = "patricia.lopez@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_EMPLEADO")
-            ),
-            User(
-                id = "7",
-                username = "empleado2",
-                nombre = "Roberto",
-                apellido = "Silva",
-                email = "roberto.silva@maestranza.cl",
-                activo = false,
-                roles = listOf("ROLE_EMPLEADO")
-            ),
-            User(
-                id = "8",
-                username = "compras2",
-                nombre = "Sofía",
-                apellido = "Torres",
-                email = "sofia.torres@maestranza.cl",
-                activo = true,
-                roles = listOf("ROLE_COMPRAS", "ROLE_VENTAS")
-            )
-        )
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
-        _uiState.update {
-            it.copy(
-                users = users,
-                filteredUsers = users
-            )
+            if (usersRepository != null) {
+                // Cargar desde API
+                val result = usersRepository.getUsuarios()
+                when (result) {
+                    is Result.Success -> {
+                        val users = result.data.map { it.toUser() }
+                        _uiState.update {
+                            it.copy(
+                                users = users,
+                                filteredUsers = users,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.exception.message ?: "Error desconocido"
+                            )
+                        }
+                    }
+                    is Result.Loading -> {
+                        // Ya está en loading
+                    }
+                }
+            } else {
+                // Fallback: datos hardcodeados si no hay contexto
+                val users = listOf(
+                    User(
+                        id = "1",
+                        username = "admin",
+                        nombre = "Juan",
+                        apellido = "Pérez",
+                        email = "juan.perez@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_ADMINISTRADOR")
+                    ),
+                    User(
+                        id = "2",
+                        username = "auditor1",
+                        nombre = "María",
+                        apellido = "González",
+                        email = "maria.gonzalez@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_AUDITOR")
+                    ),
+                    User(
+                        id = "3",
+                        username = "compras1",
+                        nombre = "Carlos",
+                        apellido = "Rodríguez",
+                        email = "carlos.rodriguez@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_COMPRAS")
+                    ),
+                    User(
+                        id = "4",
+                        username = "ventas1",
+                        nombre = "Ana",
+                        apellido = "Martínez",
+                        email = "ana.martinez@maestranza.cl",
+                        activo = false,
+                        roles = listOf("ROLE_VENTAS")
+                    ),
+                    User(
+                        id = "5",
+                        username = "supervisor1",
+                        nombre = "Luis",
+                        apellido = "Fernández",
+                        email = "luis.fernandez@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_SUPERVISOR", "ROLE_EMPLEADO")
+                    ),
+                    User(
+                        id = "6",
+                        username = "empleado1",
+                        nombre = "Patricia",
+                        apellido = "López",
+                        email = "patricia.lopez@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_EMPLEADO")
+                    ),
+                    User(
+                        id = "7",
+                        username = "empleado2",
+                        nombre = "Roberto",
+                        apellido = "Silva",
+                        email = "roberto.silva@maestranza.cl",
+                        activo = false,
+                        roles = listOf("ROLE_EMPLEADO")
+                    ),
+                    User(
+                        id = "8",
+                        username = "compras2",
+                        nombre = "Sofía",
+                        apellido = "Torres",
+                        email = "sofia.torres@maestranza.cl",
+                        activo = true,
+                        roles = listOf("ROLE_COMPRAS", "ROLE_VENTAS")
+                    )
+                )
+
+                _uiState.update {
+                    it.copy(
+                        users = users,
+                        filteredUsers = users,
+                        isLoading = false
+                    )
+                }
+            }
         }
+    }
+
+    fun retry() {
+        loadUsers()
     }
 
     fun onQueryChange(query: String) {
@@ -250,4 +296,5 @@ class UsersViewModel : ViewModel() {
         return _uiState.value.users.find { it.id == id }
     }
 }
+
 
