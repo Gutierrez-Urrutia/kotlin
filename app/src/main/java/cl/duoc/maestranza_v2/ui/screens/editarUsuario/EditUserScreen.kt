@@ -25,6 +25,7 @@ import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.EditUserViewModel
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +34,7 @@ fun EditUserScreen(
     mainViewModel: MainViewModel,
     usersViewModel: UsersViewModel,
     userId: String,
+    authViewModel: AuthViewModel? = null,
     editUserViewModel: EditUserViewModel = viewModel()
 ) {
     val state by editUserViewModel.state.collectAsState()

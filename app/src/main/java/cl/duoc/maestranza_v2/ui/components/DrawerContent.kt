@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.duoc.maestranza_v2.navigation.Screen
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 data class DrawerMenuItem(
     val icon: ImageVector,
@@ -24,6 +25,7 @@ data class DrawerMenuItem(
 @Composable
 fun DrawerContent(
     navController: NavController,
+    authViewModel: AuthViewModel? = null,
     currentRoute: String?,
     onItemClick: () -> Unit
 ) {
@@ -71,9 +73,8 @@ fun DrawerContent(
             title = "Cerrar Sesión",
             selected = false,
             onClick = {
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(0) { inclusive = true }
-                }
+                // Llamar a logout en el AuthViewModel
+                authViewModel?.logout()
                 onItemClick()
             }
         )

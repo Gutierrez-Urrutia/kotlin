@@ -28,12 +28,14 @@ import cl.duoc.maestranza_v2.ui.components.UsersFilterBottomSheet
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserScreenCompact(
     navController: NavController,
     viewModel: MainViewModel,
+    authViewModel: AuthViewModel? = null,
     usersViewModel: UsersViewModel = viewModel()
 ) {
     val uiState by usersViewModel.uiState.collectAsState()
@@ -45,8 +47,9 @@ fun UserScreenCompact(
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
+        authViewModel = authViewModel,
         showDrawer = true,
-        title = "Usuarios",
+        title = "Gestión de Usuarios",
         actions = {
             IconButton(onClick = { showFilters = true }) {
                 Icon(Icons.Default.FilterList, contentDescription = "Filtros")

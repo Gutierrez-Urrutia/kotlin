@@ -26,13 +26,15 @@ import cl.duoc.maestranza_v2.ui.components.ProductCard
 import cl.duoc.maestranza_v2.ui.components.StockFilter
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 import cl.duoc.maestranza_v2.data.model.InventoryItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryScreenExpanded(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    authViewModel: AuthViewModel? = null
 ) {
     val inventoryList by viewModel.inventoryItems.collectAsState()
     var searchText by remember { mutableStateOf("") }
@@ -63,6 +65,7 @@ fun InventoryScreenExpanded(
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
+        authViewModel = authViewModel,
         showDrawer = true,
         title = "Gestión de Inventario",
         actions = {

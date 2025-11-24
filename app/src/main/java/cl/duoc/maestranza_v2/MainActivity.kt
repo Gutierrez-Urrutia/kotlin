@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -16,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 import cl.duoc.maestranza_v2.navigation.NavigationEvent
 import cl.duoc.maestranza_v2.navigation.Screen
 import cl.duoc.maestranza_v2.ui.screens.agregarProducto.AddProductScreen
@@ -30,13 +34,23 @@ import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
 import kotlinx.coroutines.flow.collectLatest
 
-class MainActivity : ComponentActivity() {
+import androidx.fragment.app.FragmentActivity
+
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             Maestranza_V2Theme {
                 val mainViewModel : MainViewModel = viewModel()
                 val navController = rememberNavController()
+                val context = this
+                val authViewModel: AuthViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        return AuthViewModel(context) as T
+                    }
+                })
+                val authState by authViewModel.uiState.collectAsState()
+
                 LaunchedEffect(key1 = Unit){
                     mainViewModel.navigationEvents.collectLatest { event ->
                         when (event) {
@@ -52,6 +66,18 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
+                // Escuchar cambios en isAuthenticated para redirigir al logout
+                LaunchedEffect(authViewModel) {
+                    snapshotFlow { authState.isAuthenticated }
+                        .collect { isAuthenticated ->
+                            if (!isAuthenticated && navController.currentDestination?.route != Screen.Login.route) {
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        }
+                }
                 Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
                     NavHost(
                         navController = navController,
@@ -62,19 +88,20 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(navController = navController, viewModel = mainViewModel)
                         }
                         composable(route = Screen.Inventory.route){
-                            InventoryScreen(navController = navController, viewModel = mainViewModel)
+                            InventoryScreen(navController = navController, viewModel = mainViewModel, authViewModel = authViewModel)
                         }
                         composable(route = Screen.Users.route){
-                            UsersScreen(navController = navController, viewModel = mainViewModel)
+                            UsersScreen(navController = navController, viewModel = mainViewModel, authViewModel = authViewModel)
                         }
                         composable(route = Screen.AddProduct.route){
                             AddProductScreen(
                                 navController = navController,
-                                mainViewModel = mainViewModel
+                                mainViewModel = mainViewModel,
+                                authViewModel = authViewModel
                             )
                         }
                         composable(route = Screen.Movements.route){
-                            MovementsScreen(navController = navController, viewModel = mainViewModel)
+                            MovementsScreen(navController = navController, viewModel = mainViewModel, authViewModel = authViewModel)
                         }
                         composable(
                             route = Screen.EditProduct.route,
@@ -84,7 +111,8 @@ class MainActivity : ComponentActivity() {
                             EditProductScreen(
                                 navController = navController,
                                 mainViewModel = mainViewModel,
-                                productCode = productCode
+                                productCode = productCode,
+                                authViewModel = authViewModel
                             )
                         }
                         composable(
@@ -97,7 +125,8 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 mainViewModel = mainViewModel,
                                 usersViewModel = usersViewModel,
-                                userId = userId
+                                userId = userId,
+                                authViewModel = authViewModel
                             )
                         }
                     }

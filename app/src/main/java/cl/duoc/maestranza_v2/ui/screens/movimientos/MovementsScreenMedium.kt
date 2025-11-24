@@ -30,13 +30,15 @@ import cl.duoc.maestranza_v2.ui.components.MovementsFilterBottomSheet
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.MovementsViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovementsScreenMedium(
     navController: NavController,
     viewModel: MainViewModel,
-    movementsViewModel: MovementsViewModel = viewModel()
+    movementsViewModel: MovementsViewModel = viewModel(),
+    authViewModel: AuthViewModel? = null
 ) {
     val uiState by movementsViewModel.uiState.collectAsState()
     var showFilters by remember { mutableStateOf(false) }
@@ -49,6 +51,7 @@ fun MovementsScreenMedium(
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
+        authViewModel = authViewModel,
         showDrawer = true,
         title = "Movimientos",
         actions = {

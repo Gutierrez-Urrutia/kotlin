@@ -12,12 +12,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScaffoldWrapper(
     navController: NavController,
+    authViewModel: AuthViewModel? = null,
     showDrawer: Boolean = true,
     title: String = "Maestranza V2",
     actions: @Composable RowScope.() -> Unit = {},
@@ -43,6 +45,7 @@ fun ScaffoldWrapper(
                 ) {
                     DrawerContent(
                         navController = navController,
+                        authViewModel = authViewModel,
                         currentRoute = currentRoute,
                         onItemClick = {
                             scope.launch {

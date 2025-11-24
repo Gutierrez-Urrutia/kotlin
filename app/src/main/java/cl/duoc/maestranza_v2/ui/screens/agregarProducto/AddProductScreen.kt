@@ -19,12 +19,14 @@ import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.AddProductViewModel
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductScreen(
     navController: NavController,
     mainViewModel : MainViewModel,
+    authViewModel: AuthViewModel? = null,
     viewModel: AddProductViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
@@ -32,6 +34,7 @@ fun AddProductScreen(
 
     cl.duoc.maestranza_v2.ui.components.ScaffoldWrapper(
         navController = navController,
+        authViewModel = authViewModel,
         showDrawer = true,
         title = "Agregar Producto"
     ) { innerPadding ->

@@ -54,6 +54,26 @@ dependencies {
     implementation(libs.androidx.compose.material3.window.size.class1)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
+
+    // Networking - Retrofit + OkHttp
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    // Gson for JSON parsing
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // DataStore for secure token storage
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Biometric for fingerprint authentication
+    implementation("androidx.biometric:biometric:1.1.0")
+
+
+    // Coroutines (already have, but ensuring latest)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

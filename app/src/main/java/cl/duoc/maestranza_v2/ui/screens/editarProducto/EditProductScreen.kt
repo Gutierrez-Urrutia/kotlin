@@ -20,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.EditProductViewModel
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +28,7 @@ fun EditProductScreen(
     navController: NavController,
     mainViewModel: MainViewModel,
     productCode: String,
+    authViewModel: AuthViewModel? = null,
     viewModel: EditProductViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()

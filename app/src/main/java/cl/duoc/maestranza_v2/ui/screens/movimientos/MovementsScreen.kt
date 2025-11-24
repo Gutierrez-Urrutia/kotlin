@@ -7,16 +7,17 @@ import androidx.navigation.NavController
 import cl.duoc.maestranza_v2.ui.utils.obtenerWindowSizeClass
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.MovementsViewModel
+import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
 
 @Composable
-fun MovementsScreen(navController: NavController, viewModel: MainViewModel) {
+fun MovementsScreen(navController: NavController, viewModel: MainViewModel, authViewModel: AuthViewModel? = null) {
     val windowSizeClass = obtenerWindowSizeClass()
     val movementsViewModel: MovementsViewModel = viewModel()
 
     when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> MovementsScreenCompact(navController, viewModel, movementsViewModel)
-        WindowWidthSizeClass.Medium -> MovementsScreenMedium(navController, viewModel, movementsViewModel)
-        WindowWidthSizeClass.Expanded -> MovementsScreenExpanded(navController, viewModel, movementsViewModel)
+        WindowWidthSizeClass.Compact -> MovementsScreenCompact(navController, viewModel, movementsViewModel, authViewModel)
+        WindowWidthSizeClass.Medium -> MovementsScreenMedium(navController, viewModel, movementsViewModel, authViewModel)
+        WindowWidthSizeClass.Expanded -> MovementsScreenExpanded(navController, viewModel, movementsViewModel, authViewModel)
     }
 }
 
