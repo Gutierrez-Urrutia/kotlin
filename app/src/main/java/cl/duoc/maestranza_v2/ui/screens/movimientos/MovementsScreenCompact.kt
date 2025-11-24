@@ -31,15 +31,20 @@ import cl.duoc.maestranza_v2.ui.theme.Maestranza_V2Theme
 import cl.duoc.maestranza_v2.viewmodel.MainViewModel
 import cl.duoc.maestranza_v2.viewmodel.MovementsViewModel
 import cl.duoc.maestranza_v2.viewmodel.AuthViewModel
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovementsScreenCompact(
     navController: NavController,
     viewModel: MainViewModel,
-    movementsViewModel: MovementsViewModel = viewModel(),
     authViewModel: AuthViewModel? = null
 ) {
+    val context = LocalContext.current
+    val movementsViewModel = remember {
+        MovementsViewModel(context = context)
+    }
+
     val uiState by movementsViewModel.uiState.collectAsState()
     var showFilters by remember { mutableStateOf(false) }
     var showDetailSheet by remember { mutableStateOf(false) }

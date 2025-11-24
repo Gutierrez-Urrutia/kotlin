@@ -24,3 +24,26 @@ enum class MovementTypeFilter {
     All, Entrada, Salida
 }
 
+/**
+ * Extensión para mapear MovimientoDTO a Movement
+ */
+fun MovimientoDTO.toMovement(): Movement {
+    return Movement(
+        id = this.id.toString(),
+        fecha = java.time.LocalDateTime.parse(this.fecha),
+        usuario = this.usuario?.username ?: "Sistema",
+        productoId = this.productoId.toString(),
+        productoCodigo = this.productoCodigo ?: "N/A",
+        productoNombre = this.productoNombre ?: "Producto desconocido",
+        productoImagePath = this.imagePath,
+        cantidad = this.cantidad,
+        tipo = when (this.tipo.uppercase()) {
+            "ENTRADA" -> MovementType.ENTRADA
+            "SALIDA" -> MovementType.SALIDA
+            else -> MovementType.ENTRADA
+        },
+        descripcion = this.descripcion,
+        comprobantePath = this.imagePath
+    )
+}
+

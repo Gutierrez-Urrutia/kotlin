@@ -1,10 +1,16 @@
 package cl.duoc.maestranza_v2.viewmodel
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.maestranza_v2.data.model.Movement
 import cl.duoc.maestranza_v2.data.model.MovementType
 import cl.duoc.maestranza_v2.data.model.MovementTypeFilter
+import cl.duoc.maestranza_v2.data.model.toMovement
+import cl.duoc.maestranza_v2.data.remote.ApiClient
+import cl.duoc.maestranza_v2.data.repository.MovementsRepository
+import cl.duoc.maestranza_v2.data.repository.Result
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -26,12 +32,16 @@ data class MovementsUiState(
 )
 
 @OptIn(FlowPreview::class)
-class MovementsViewModel : ViewModel() {
+class MovementsViewModel(context: Context? = null) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovementsUiState())
     val uiState: StateFlow<MovementsUiState> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
+
+    private val movementsRepository: MovementsRepository? = context?.let {
+        MovementsRepository(ApiClient(it))
+    }
 
     init {
         loadMovements()
@@ -48,108 +58,79 @@ class MovementsViewModel : ViewModel() {
     }
 
     private fun loadMovements() {
-        // Datos hardcoded para demo
-        val movements = listOf(
-            Movement(
-                id = "1",
-                fecha = LocalDateTime.now().minusHours(2),
-                usuario = "admin",
-                productoId = "HCOR-001",
-                productoCodigo = "HCOR-001",
-                productoNombre = "Broca HSS 5mm",
-                cantidad = 50,
-                tipo = MovementType.ENTRADA,
-                descripcion = "Reabastecimiento stock",
-                comprobantePath = "https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Comprobante+Entrada"
-            ),
-            Movement(
-                id = "2",
-                fecha = LocalDateTime.now().minusHours(5),
-                usuario = "compras1",
-                productoId = "MAT-001",
-                productoCodigo = "MAT-001",
-                productoNombre = "Lámina Acero Inox 1mm",
-                cantidad = 20,
-                tipo = MovementType.SALIDA,
-                descripcion = "Salida a proyecto Planta Norte"
-            ),
-            Movement(
-                id = "3",
-                fecha = LocalDateTime.now().minusDays(1),
-                usuario = "admin",
-                productoId = "EQ-001",
-                productoCodigo = "EQ-001",
-                productoNombre = "Soldadora MIG 200A",
-                cantidad = 2,
-                tipo = MovementType.ENTRADA,
-                descripcion = "Compra nueva maquinaria",
-                comprobantePath = "https://via.placeholder.com/600x400/2196F3/FFFFFF?text=Factura+Compra"
-            ),
-            Movement(
-                id = "4",
-                fecha = LocalDateTime.now().minusDays(1).minusHours(3),
-                usuario = "ventas1",
-                productoId = "CONS-001",
-                productoCodigo = "CONS-001",
-                productoNombre = "Disco Corte 4.5\"",
-                cantidad = 100,
-                tipo = MovementType.SALIDA,
-                descripcion = "Venta cliente ABC",
-                comprobantePath = "https://via.placeholder.com/600x400/F44336/FFFFFF?text=Guia+Despacho"
-            ),
-            Movement(
-                id = "5",
-                fecha = LocalDateTime.now().minusDays(2),
-                usuario = "supervisor1",
-                productoId = "HCOR-003",
-                productoCodigo = "HCOR-003",
-                productoNombre = "Sierra Circular 7\"",
-                cantidad = 5,
-                tipo = MovementType.ENTRADA,
-                descripcion = "Devolución de bodega externa"
-            ),
-            Movement(
-                id = "6",
-                fecha = LocalDateTime.now().minusDays(2).minusHours(4),
-                usuario = "compras2",
-                productoId = "MAT-002",
-                productoCodigo = "MAT-002",
-                productoNombre = "Tubo Acero 2\" x 6m",
-                cantidad = 15,
-                tipo = MovementType.SALIDA,
-                descripcion = "Transferencia a sucursal sur"
-            ),
-            Movement(
-                id = "7",
-                fecha = LocalDateTime.now().minusDays(3),
-                usuario = "admin",
-                productoId = "CONS-003",
-                productoCodigo = "CONS-003",
-                productoNombre = "Electrodo 6013 3.2mm",
-                cantidad = 200,
-                tipo = MovementType.ENTRADA,
-                descripcion = "Compra proveedor principal"
-            ),
-            Movement(
-                id = "8",
-                fecha = LocalDateTime.now().minusDays(3).minusHours(6),
-                usuario = "empleado1",
-                productoId = "HCOR-004",
-                productoCodigo = "HCOR-004",
-                productoNombre = "Juego Llaves Allen",
-                cantidad = 3,
-                tipo = MovementType.SALIDA,
-                descripcion = "Asignación herramientas técnico"
-            )
-        )
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
-        _uiState.update {
-            it.copy(
-                movements = movements,
-                filteredMovements = movements
-            )
+            if (movementsRepository != null) {
+                // Cargar movimientos desde API
+                val result = movementsRepository.getMovimientos()
+                when (result) {
+                    is Result.Success -> {
+                        val movements = result.data.map { it.toMovement() }.sortedByDescending { it.fecha }
+                        Log.d("MovementsViewModel", "Movimientos cargados: ${movements.size} items")
+                        _uiState.update {
+                            it.copy(
+                                movements = movements,
+                                filteredMovements = movements,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                        calculateKPIs()
+                    }
+                    is Result.Error -> {
+                        Log.e("MovementsViewModel", "Error al cargar movimientos: ${result.exception.message}")
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.exception.message ?: "Error desconocido"
+                            )
+                        }
+                    }
+                    is Result.Loading -> {}
+                }
+            } else {
+                Log.w("MovementsViewModel", "Repositorio no disponible, usando datos de demostración")
+                // Fallback: datos de demostración
+                val movements = listOf(
+                    Movement(
+                        id = "1",
+                        fecha = LocalDateTime.now().minusHours(2),
+                        usuario = "admin",
+                        productoId = "HCOR-001",
+                        productoCodigo = "HCOR-001",
+                        productoNombre = "Broca HSS 5mm",
+                        cantidad = 50,
+                        tipo = MovementType.ENTRADA,
+                        descripcion = "Reabastecimiento stock"
+                    ),
+                    Movement(
+                        id = "2",
+                        fecha = LocalDateTime.now().minusHours(5),
+                        usuario = "compras1",
+                        productoId = "MAT-001",
+                        productoCodigo = "MAT-001",
+                        productoNombre = "Lámina Acero Inox 1mm",
+                        cantidad = 20,
+                        tipo = MovementType.SALIDA,
+                        descripcion = "Salida a proyecto Planta Norte"
+                    )
+                )
+
+                _uiState.update {
+                    it.copy(
+                        movements = movements,
+                        filteredMovements = movements,
+                        isLoading = false
+                    )
+                }
+                calculateKPIs()
+            }
         }
-        calculateKPIs()
+    }
+
+    fun retry() {
+        loadMovements()
     }
 
     private fun calculateKPIs() {
@@ -243,9 +224,8 @@ class MovementsViewModel : ViewModel() {
     }
 
     fun refreshMovements() {
-        // Recalcular datos después de agregar un nuevo movimiento
-        calculateKPIs()
-        applyFilters()
+        // Recargar datos desde la API
+        loadMovements()
     }
 
     fun getMovementById(id: String): Movement? {
