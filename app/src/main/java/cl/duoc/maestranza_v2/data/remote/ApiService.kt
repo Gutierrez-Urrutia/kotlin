@@ -90,7 +90,7 @@ interface ApiService {
     suspend fun getUsuarioById(@Path("id") id: Long): Response<UsuarioDTO>
 
     @POST("api/v1/usuarios")
-    suspend fun createUsuario(@Body usuario: UsuarioDTO): Response<Map<String, Any>>
+    suspend fun createUsuario(@Body usuario: CrearUsuarioDTO): Response<Map<String, Any>>
 
     @PATCH("api/v1/usuarios/{id}")
     suspend fun updateUsuario(@Path("id") id: Long, @Body usuario: ActualizarUsuarioDTO): Response<Map<String, Any>>

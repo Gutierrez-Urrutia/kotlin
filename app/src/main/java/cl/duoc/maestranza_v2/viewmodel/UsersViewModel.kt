@@ -1,15 +1,18 @@
 package cl.duoc.maestranza_v2.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.maestranza_v2.data.model.User
 import cl.duoc.maestranza_v2.data.model.UserFilters
 import cl.duoc.maestranza_v2.data.model.UserStatusFilter
 import cl.duoc.maestranza_v2.data.model.toUser
+import cl.duoc.maestranza_v2.data.model.CrearUsuarioDTO
 import cl.duoc.maestranza_v2.data.remote.ApiClient
 import cl.duoc.maestranza_v2.data.repository.Result
 import cl.duoc.maestranza_v2.data.repository.UsersRepository
+import cl.duoc.maestranza_v2.data.repository.RolesRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,15 +25,9 @@ class UsersViewModel(context: Context? = null) : ViewModel() {
         val filteredUsers: List<User> = emptyList(),
         val query: String = "",
         val filters: UserFilters = UserFilters(),
-        val availableRoles: List<String> = listOf(
-            "ROLE_ADMINISTRADOR",
-            "ROLE_AUDITOR",
-            "ROLE_COMPRAS",
-            "ROLE_VENTAS",
-            "ROLE_SUPERVISOR",
-            "ROLE_EMPLEADO"
-        ),
+        val availableRoles: List<String> = emptyList(),
         val isLoading: Boolean = false,
+        val rolesLoading: Boolean = false,
         val error: String? = null
     )
 
@@ -39,11 +36,19 @@ class UsersViewModel(context: Context? = null) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
 
+    // Mapa de rol mostrado (ej: "Administrador") -> rol original de API (ej: "ROLE_ADMINISTRADOR")
+    private var rolesMap: Map<String, String> = emptyMap()
+
     private val usersRepository: UsersRepository? = context?.let {
         UsersRepository(ApiClient(it))
     }
 
+    private val rolesRepository: RolesRepository? = context?.let {
+        RolesRepository(ApiClient(it))
+    }
+
     init {
+        loadRoles()
         loadUsers()
 
         // Búsqueda con debounce de 300ms
@@ -176,6 +181,82 @@ class UsersViewModel(context: Context? = null) : ViewModel() {
         }
     }
 
+    private fun loadRoles() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(rolesLoading = true) }
+
+            if (rolesRepository != null) {
+                // Cargar roles desde API
+                val result = rolesRepository.getRoles()
+                when (result) {
+                    is Result.Success -> {
+                        // Crear mapeo: rol mostrado -> rol original de API
+                        // Ej: "Administrador" -> "ROLE_ADMINISTRADOR"
+                        rolesMap = result.data.associate { rolDTO ->
+                            val displayName = formatRolName(rolDTO.nombre)
+                            displayName to rolDTO.nombre  // Guardar el nombre original de la API
+                        }
+
+                        val rolesDisplay = result.data.map { rolDTO ->
+                            formatRolName(rolDTO.nombre)
+                        }.sorted()
+
+                        Log.d("UsersViewModel", "Roles cargados: ${rolesMap}")
+
+                        _uiState.update {
+                            it.copy(
+                                availableRoles = rolesDisplay,
+                                rolesLoading = false
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        Log.e("UsersViewModel", "Error al cargar roles: ${result.exception.message}")
+                        // Usar roles por defecto si falla
+                        val rolesDefault = listOf(
+                            "ROLE_ADMINISTRADOR",
+                            "ROLE_AUDITOR",
+                            "ROLE_COMPRAS",
+                            "ROLE_VENTAS",
+                            "ROLE_SUPERVISOR",
+                            "ROLE_EMPLEADO"
+                        )
+                        _uiState.update {
+                            it.copy(
+                                availableRoles = rolesDefault,
+                                rolesLoading = false
+                            )
+                        }
+                    }
+                    is Result.Loading -> {}
+                }
+            } else {
+                // Usar roles por defecto si no hay repositorio
+                val rolesDefault = listOf(
+                    "ROLE_ADMINISTRADOR",
+                    "ROLE_AUDITOR",
+                    "ROLE_COMPRAS",
+                    "ROLE_VENTAS",
+                    "ROLE_SUPERVISOR",
+                    "ROLE_EMPLEADO"
+                )
+                _uiState.update {
+                    it.copy(
+                        availableRoles = rolesDefault,
+                        rolesLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun formatRolName(rolName: String): String {
+        return when {
+            rolName.startsWith("ROLE_") -> rolName
+            else -> "ROLE_${rolName.uppercase()}"
+        }
+    }
+
     fun retry() {
         loadUsers()
     }
@@ -282,6 +363,67 @@ class UsersViewModel(context: Context? = null) : ViewModel() {
         applyFilters()
     }
 
+    fun createNewUser(
+        username: String,
+        email: String,
+        nombre: String,
+        apellido: String,
+        password: String,
+        roles: List<String>,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            if (usersRepository != null) {
+                // Convertir roles mostrados a sus nombres originales de la API
+                val rolesOriginales = roles.mapNotNull { rolMostrado ->
+                    rolesMap[rolMostrado]  // Obtener "ROLE_ADMINISTRADOR" de "Administrador"
+                }
+
+                if (rolesOriginales.isEmpty()) {
+                    onError("Roles no válidos. Por favor, selecciona roles válidos.")
+                    return@launch
+                }
+
+                // Limpiar y formatear datos
+                val crearUsuarioDTO = CrearUsuarioDTO(
+                    username = username.trim().lowercase(),
+                    email = email.trim().lowercase(),
+                    nombre = nombre.trim(),
+                    apellido = apellido.trim(),
+                    password = password.trim(),
+                    roles = rolesOriginales  // Enviar roles originales de la API
+                )
+
+                Log.d("UsersViewModel", "===== CREANDO USUARIO =====")
+                Log.d("UsersViewModel", "Username: ${crearUsuarioDTO.username}")
+                Log.d("UsersViewModel", "Email: ${crearUsuarioDTO.email}")
+                Log.d("UsersViewModel", "Nombre: ${crearUsuarioDTO.nombre}")
+                Log.d("UsersViewModel", "Apellido: ${crearUsuarioDTO.apellido}")
+                Log.d("UsersViewModel", "Password: ${crearUsuarioDTO.password}")
+                Log.d("UsersViewModel", "Roles originales: ${crearUsuarioDTO.roles}")
+                Log.d("UsersViewModel", "===== FIN PAYLOAD =====")
+
+                val result = usersRepository.createUsuario(crearUsuarioDTO)
+                when (result) {
+                    is Result.Success -> {
+                        Log.d("UsersViewModel", "Usuario creado exitosamente")
+                        loadUsers()
+                        onSuccess()
+                    }
+                    is Result.Error -> {
+                        Log.e("UsersViewModel", "Error al crear usuario: ${result.exception.message}")
+                        onError(result.exception.message ?: "Error desconocido")
+                    }
+                    is Result.Loading -> {}
+                }
+            } else {
+                Log.e("UsersViewModel", "Repositorio no disponible")
+                onError("Repositorio no disponible")
+            }
+        }
+    }
+
     fun updateUser(updatedUser: User) {
         _uiState.update { state ->
             val updatedUsers = state.users.map { user ->
@@ -296,5 +438,3 @@ class UsersViewModel(context: Context? = null) : ViewModel() {
         return _uiState.value.users.find { it.id == id }
     }
 }
-
-

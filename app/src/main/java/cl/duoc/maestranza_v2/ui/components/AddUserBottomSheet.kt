@@ -12,6 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -21,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.maestranza_v2.data.model.User
 import cl.duoc.maestranza_v2.viewmodel.AddUserViewModel
+import cl.duoc.maestranza_v2.viewmodel.UsersViewModel
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,9 +34,11 @@ fun AddUserBottomSheet(
     existingUsers: List<User>,
     onDismiss: () -> Unit,
     onUserAdded: (User) -> Unit,
+    usersViewModel: UsersViewModel? = null,
     addUserViewModel: AddUserViewModel = viewModel()
 ) {
     val state by addUserViewModel.state.collectAsState()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     // Diálogo de confirmación para descartar cambios
     if (state.hasChanges) {
@@ -84,6 +90,23 @@ fun AddUserBottomSheet(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Mostrar mensaje de error si hay
+                errorMessage?.let { error ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = error,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
                 // Nombre
                 OutlinedTextField(
                     value = state.nombre,
@@ -238,15 +261,7 @@ fun AddUserBottomSheet(
                     Spacer(Modifier.height(8.dp))
 
                     availableRoles.forEach { role ->
-                        val roleFormatted = when (role) {
-                            "ROLE_ADMINISTRADOR" -> "Administrador"
-                            "ROLE_AUDITOR" -> "Auditor"
-                            "ROLE_COMPRAS" -> "Compras"
-                            "ROLE_VENTAS" -> "Ventas"
-                            "ROLE_SUPERVISOR" -> "Supervisor"
-                            "ROLE_EMPLEADO" -> "Empleado"
-                            else -> role.removePrefix("ROLE_")
-                        }
+                        val roleFormatted = formatRolDisplayName(role)
 
                         Row(
                             modifier = Modifier
@@ -310,18 +325,55 @@ fun AddUserBottomSheet(
                     onClick = {
                         if (addUserViewModel.validateForm(existingUsers)) {
                             addUserViewModel.setLoading(true)
-                            // Crear nuevo usuario
-                            val newUser = User(
-                                id = UUID.randomUUID().toString(),
-                                username = state.username,
-                                nombre = state.nombre,
-                                apellido = state.apellido,
-                                email = state.email,
-                                activo = true,
-                                roles = state.selectedRoles.toList()
-                            )
-                            onUserAdded(newUser)
-                            addUserViewModel.resetForm()
+
+                            // Llamar a API si usersViewModel está disponible
+                            if (usersViewModel != null) {
+                                usersViewModel.createNewUser(
+                                    username = state.username,
+                                    email = state.email,
+                                    nombre = state.nombre,
+                                    apellido = state.apellido,
+                                    password = state.password,
+                                    roles = state.selectedRoles.map { role ->
+                                        // Convertir a formato API si es necesario
+                                        when (role) {
+                                            "Administrador" -> "ROLE_ADMINISTRADOR"
+                                            "Auditor" -> "ROLE_AUDITOR"
+                                            "Compras" -> "ROLE_COMPRAS"
+                                            "Ventas" -> "ROLE_VENTAS"
+                                            "Supervisor" -> "ROLE_SUPERVISOR"
+                                            "Empleado" -> "ROLE_EMPLEADO"
+                                            "Gerencia" -> "ROLE_GERENCIA"
+                                            "Inventario" -> "ROLE_INVENTARIO"
+                                            "Logistica" -> "ROLE_LOGISTICA"
+                                            "Produccion" -> "ROLE_PRODUCCION"
+                                            "Trabajador" -> "ROLE_TRABAJADOR"
+                                            else -> role
+                                        }
+                                    }.toList(),
+                                    onSuccess = {
+                                        addUserViewModel.resetForm()
+                                        onDismiss()
+                                    },
+                                    onError = { error ->
+                                        errorMessage = error
+                                        addUserViewModel.setLoading(false)
+                                    }
+                                )
+                            } else {
+                                // Fallback: crear usuario localmente (sin API)
+                                val newUser = User(
+                                    id = UUID.randomUUID().toString(),
+                                    username = state.username,
+                                    nombre = state.nombre,
+                                    apellido = state.apellido,
+                                    email = state.email,
+                                    activo = true,
+                                    roles = state.selectedRoles.toList()
+                                )
+                                onUserAdded(newUser)
+                                addUserViewModel.resetForm()
+                            }
                         }
                     },
                     modifier = Modifier.weight(1f),
@@ -345,5 +397,25 @@ fun AddUserBottomSheet(
 @Composable
 private fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
     // Placeholder para BackHandler - requiere importar androidx.activity.compose.BackHandler
+}
+
+private fun formatRolDisplayName(role: String): String {
+    return when (role) {
+        "ROLE_ADMINISTRADOR" -> "Administrador"
+        "ROLE_AUDITOR" -> "Auditor"
+        "ROLE_COMPRAS" -> "Compras"
+        "ROLE_VENTAS" -> "Ventas"
+        "ROLE_SUPERVISOR" -> "Supervisor"
+        "ROLE_EMPLEADO" -> "Empleado"
+        "ROLE_GERENCIA" -> "Gerencia"
+        "ROLE_INVENTARIO" -> "Inventario"
+        "ROLE_LOGISTICA" -> "Logística"
+        "ROLE_PRODUCCION" -> "Producción"
+        "ROLE_TRABAJADOR" -> "Trabajador"
+        else -> role.removePrefix("ROLE_")
+            .replace("_", " ")
+            .lowercase()
+            .replaceFirstChar { it.uppercase() }
+    }
 }
 

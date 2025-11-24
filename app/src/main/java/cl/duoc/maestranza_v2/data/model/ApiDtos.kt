@@ -104,6 +104,15 @@ data class ActualizarUsuarioDTO(
     val roles: List<String>? = null
 )
 
+data class CrearUsuarioDTO(
+    val username: String,
+    val email: String,
+    val nombre: String,
+    val apellido: String,
+    val password: String,
+    val roles: List<String>
+)
+
 // ==================== ROL DTOs ====================
 
 data class RolDTO(

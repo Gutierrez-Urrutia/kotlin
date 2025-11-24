@@ -294,7 +294,8 @@ fun UserScreenCompact(
                 onUserAdded = { newUser ->
                     usersViewModel.addUser(newUser)
                     showAddUser = false
-                }
+                },
+                usersViewModel = usersViewModel
             )
         }
     }

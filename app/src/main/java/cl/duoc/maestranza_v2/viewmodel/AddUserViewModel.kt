@@ -68,35 +68,46 @@ class AddUserViewModel : ViewModel() {
 
     fun validateForm(existingUsers: List<User>): Boolean {
         val currentState = _state.value
+
+        // Limpiar espacios en blanco innecesarios
+        val nombreLimpio = currentState.nombre.trim()
+        val apellidoLimpio = currentState.apellido.trim()
+        val emailLimpio = currentState.email.trim().lowercase()
+
         val errors = AddUserErrors(
             nombre = when {
-                currentState.nombre.isBlank() -> "El nombre es obligatorio"
-                currentState.nombre.length < 2 -> "El nombre debe tener al menos 2 caracteres"
+                nombreLimpio.isBlank() -> "El nombre es obligatorio"
+                nombreLimpio.length < 2 -> "El nombre debe tener al menos 2 caracteres"
+                nombreLimpio.any { it.isDigit() } -> "El nombre no debe contener números"
                 else -> null
             },
             apellido = when {
-                currentState.apellido.isBlank() -> "El apellido es obligatorio"
-                currentState.apellido.length < 2 -> "El apellido debe tener al menos 2 caracteres"
+                apellidoLimpio.isBlank() -> "El apellido es obligatorio"
+                apellidoLimpio.length < 2 -> "El apellido debe tener al menos 2 caracteres"
+                apellidoLimpio.any { it.isDigit() } -> "El apellido no debe contener números"
                 else -> null
             },
             username = when {
                 currentState.username.isBlank() -> "El nombre de usuario es obligatorio"
-                !usernameRegex.matches(currentState.username) ->
-                    "Usuario debe tener 3-20 caracteres (letras, números, . _ -)"
+                currentState.username.length < 3 -> "Usuario debe tener al menos 3 caracteres"
+                currentState.username.length > 20 -> "Usuario no puede tener más de 20 caracteres"
+                !currentState.username.matches(Regex("^[a-zA-Z0-9._-]*$")) ->
+                    "Usuario solo puede contener letras, números, puntos, guiones y guiones bajos"
                 existingUsers.any { it.username.equals(currentState.username, ignoreCase = true) } ->
                     "Este nombre de usuario ya existe"
                 else -> null
             },
             email = when {
-                currentState.email.isBlank() -> "El correo electrónico es obligatorio"
-                !emailRegex.matches(currentState.email) -> "Formato de correo inválido"
-                existingUsers.any { it.email.equals(currentState.email, ignoreCase = true) } ->
+                emailLimpio.isBlank() -> "El correo electrónico es obligatorio"
+                !emailRegex.matches(emailLimpio) -> "Formato de correo inválido (ej: usuario@empresa.com)"
+                existingUsers.any { it.email.equals(emailLimpio, ignoreCase = true) } ->
                     "Este correo ya está registrado"
                 else -> null
             },
             password = when {
                 currentState.password.isBlank() -> "La contraseña es obligatoria"
                 currentState.password.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+                currentState.password.length > 50 -> "La contraseña no puede tener más de 50 caracteres"
                 else -> null
             },
             confirmPassword = when {

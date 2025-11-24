@@ -297,7 +297,8 @@ fun UserScreenMedium(
                 onUserAdded = { newUser ->
                     usersViewModel.addUser(newUser)
                     showAddUser = false
-                }
+                },
+                usersViewModel = usersViewModel
             )
         }
     }
